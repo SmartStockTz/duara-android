@@ -22,10 +22,7 @@ fun saveUser(userModel: UserModel) {
     }
 }
 
-fun getUser(onFinish: (user: UserModel) -> Unit){
-    getRealm().executeTransactionAsync{
-        val u = it.where(UserModel::class.java)
-            .equalTo("_id","duara_user").findFirstAsync()
-        onFinish(u)
-    }
+fun getUser(): UserModel? {
+    return getRealm().where(UserModel::class.java)
+        .equalTo("id", "duara_user").findFirst()
 }

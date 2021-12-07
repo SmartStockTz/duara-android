@@ -1,38 +1,58 @@
 package com.fahamutech.duara
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.fahamutech.duara.pages.JiungePage
+import com.fahamutech.duara.pages.Maongezi
+import com.fahamutech.duara.services.getUser
+import com.fahamutech.duara.services.initLocalDatabase
+import com.fahamutech.duara.states.JiungeState
 import com.fahamutech.duara.ui.theme.DuaraTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        initLocalDatabase(this)
+        val jiungeState by viewModels<JiungeState>()
         setContent {
-            DuaraTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(color = MaterialTheme.colors.background) {
-                    Greeting("Android")
-                }
-            }
+            DuaraApp(jiungeState = jiungeState, this)
         }
     }
 }
 
 @Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
+fun DuaraApp(jiungeState: JiungeState, activity: ComponentActivity) {
+    val navController = rememberNavController()
     DuaraTheme {
-        Greeting("Android")
+        Surface(color = MaterialTheme.colors.background) {
+            NavHost(navController = navController, startDestination = "jiunge") {
+                composable("jiunge") {
+                    val u = getUser()
+                    if (u === null) {
+                        JiungePage(jiungeState, activity, navController)
+                    } else {
+                        Maongezi()
+                    }
+                }
+                composable("maongezi") { Maongezi() }
+            }
+        }
     }
 }
+//
+//@Preview(showBackground = true)
+//@Composable
+//fun DefaultPreview() {
+//    DuaraTheme {
+//        Greeting(viewModel())
+//    }
+//}

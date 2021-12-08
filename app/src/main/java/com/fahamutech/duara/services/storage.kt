@@ -1,6 +1,7 @@
 package com.fahamutech.duara.services
 
 import android.content.Context
+import com.fahamutech.duara.models.Ongezi
 import com.fahamutech.duara.models.UserModel
 import io.realm.Realm
 import io.realm.RealmConfiguration
@@ -11,7 +12,9 @@ fun initLocalDatabase(context: Context) {
 }
 
 private fun getRealm(): Realm {
-    val configuration = RealmConfiguration.Builder().name("duara").build()
+    val configuration = RealmConfiguration.Builder().name("duara")
+        .deleteRealmIfMigrationNeeded()
+        .build()
     return Realm.getInstance(configuration)
 }
 
@@ -25,4 +28,8 @@ fun saveUser(userModel: UserModel) {
 fun getUser(): UserModel? {
     return getRealm().where(UserModel::class.java)
         .equalTo("id", "duara_user").findFirst()
+}
+
+fun getConversions(): List<Ongezi> {
+    return getRealm().where(Ongezi::class.java).findAll().toList()
 }

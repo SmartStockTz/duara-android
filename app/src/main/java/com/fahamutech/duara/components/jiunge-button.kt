@@ -28,14 +28,17 @@ fun JiungeButton(jiungeState: JiungeState, navController: NavController, context
     ) {
         Button(
             onClick = {
-                jiungeState.jiunge(context){
-                    navController.navigate("maongezi")
+                jiungeState.jiunge(context) {
+                    navController.navigate("maongezi") {
+                        popUpTo(0)
+                        launchSingleTop = true
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = !onFetching!!
         ) {
-            if (onFetching as Boolean){
+            if (onFetching as Boolean) {
                 Text(
                     "Subiri...",
                     modifier = Modifier.fillMaxWidth(),
@@ -44,7 +47,7 @@ fun JiungeButton(jiungeState: JiungeState, navController: NavController, context
                     lineHeight = 19.sp,
                     fontSize = 16.sp
                 )
-            }else{
+            } else {
                 Text(
                     "Jiunge.",
                     modifier = Modifier.fillMaxWidth(),

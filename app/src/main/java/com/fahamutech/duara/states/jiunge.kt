@@ -7,10 +7,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fahamutech.duara.models.UserModel
 import com.fahamutech.duara.services.ensureContactPermission
 import com.fahamutech.duara.services.getIdentity
-import com.fahamutech.duara.services.saveUser
+import com.fahamutech.duara.utils.message
+import com.fahamutech.duara.utils.withTryCatch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -26,30 +26,27 @@ class JiungeState : ViewModel() {
     }
 
     fun jiunge(context: Activity, onFinish: () -> Unit) {
-        fun message() {
-            Toast
-                .makeText(context, "Jina linatakiwa liwe angalau herudi 3", Toast.LENGTH_SHORT)
-                .show()
-        }
-
         val n = nickname.value
         if (n != null) {
             if (n.isEmpty().or(n.length < 3)) {
-                message()
+                message("Jina linatakiwa liwe angalau herudi 3", context)
             } else {
                 ensureContactPermission(context) {
                     _getIdentityProgress.value = true
                     viewModelScope.launch(Dispatchers.Main) {
-                        getIdentity(nickname.value!!, context) {
-                            it?.nickname?.let { it1 -> Log.e("USER", it1) }
-                            _getIdentityProgress.value = false
+                        withTryCatch(run = {
+                            val identity = getIdentity(nickname.value!!)
+                            Log.e("USER", identity.nickname)
                             onFinish()
+                            _getIdentityProgress.value = false
+                        }){
+                            message(it, context)
                         }
                     }
                 }
             }
         } else {
-            message()
+            message("Jina linatakiwa liwe angalau herudi 3", context)
         }
     }
 }

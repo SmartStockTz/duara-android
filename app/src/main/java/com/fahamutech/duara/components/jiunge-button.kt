@@ -1,6 +1,7 @@
 package com.fahamutech.duara.components
 
 import android.app.Activity
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,9 +30,12 @@ fun JiungeButton(jiungeState: JiungeState, navController: NavController, context
         Button(
             onClick = {
                 jiungeState.jiunge(context) {
+//                    Log.e("FUCKKK nav", "use****r")
                     navController.navigate("maongezi") {
-                        popUpTo(0)
-                        launchSingleTop = true
+//                        popUpTo("jiunge"){
+//                            inclusive = true
+//                        }
+//                        launchSingleTop = true
                     }
                 }
             },

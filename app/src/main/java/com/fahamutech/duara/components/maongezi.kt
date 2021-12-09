@@ -69,7 +69,7 @@ fun HamnaMaongezi() {
             modifier = Modifier.size(100.dp)
         ) {
             Image(
-                painter = painterResource(id = R.drawable.no_chat),
+                painter = painterResource(id = R.drawable.duaralogo),
                 contentDescription = "hamna"
             )
         }

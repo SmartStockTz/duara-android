@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
@@ -18,16 +21,34 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun JiungePage(jiungeState: JiungeState, context: Activity, navController: NavController) {
-    Column(
-        modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-    ) {
-        Logo()
-        DuaraTitle()
-        DuaraWelcomeText()
-        NicknameInput(jiungeState)
-        JiungeButton(jiungeState, navController, context)
+    val user by jiungeState.user.observeAsState()
+    if (user == null) {
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+        ) {
+            Logo()
+            DuaraTitle()
+            DuaraWelcomeText()
+            NicknameInput(jiungeState)
+            JiungeButton(jiungeState, navController, context)
+        }
+    }
+    LaunchedEffect(user == null) {
+        jiungeState.loadUser()
+        if (user != null) {
+            navController.navigate("maongezi") {
+                popUpTo(0) {
+                    inclusive = true
+                }
+                launchSingleTop = true
+            }
+        }
     }
 }
+
+
+
+

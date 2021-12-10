@@ -31,13 +31,15 @@ suspend fun saveUser(userModel: UserModel) {
     }
 }
 
-fun getUser(): UserModel? {
-    val u = getRealm().where(UserModel::class.java)
-        .equalTo("id", "duara_user").findFirst()
-    return if (u != null) {
-        getRealm().copyFromRealm(u)
-    } else {
-        u
+suspend fun getUser(): UserModel? {
+    return withContext(Dispatchers.IO){
+        val u = getRealm().where(UserModel::class.java)
+            .equalTo("id", "duara_user").findFirst()
+        return@withContext if (u != null) {
+            getRealm().copyFromRealm(u)
+        } else {
+            u
+        }
     }
 }
 
@@ -53,9 +55,18 @@ fun getMaduaraYote(): List<Duara> {
     return getRealm().where(Duara::class.java).findAllAsync().toList()
 }
 
-fun getMaduaraByDuara(duara: String): List<Duara> {
-    return getRealm().where(Duara::class.java)
-        .equalTo("duara", duara).findAllAsync().toList()
+suspend fun getMaduaraByDuara(duara: String): List<Duara> {
+    return withContext(Dispatchers.IO) {
+        return@withContext getRealm().where(Duara::class.java)
+            .equalTo("duara", duara).findAll().toList()
+    }
+}
+
+suspend fun countWaliomoKwenyeDuara(duara: String): Int {
+    return withContext(Dispatchers.IO) {
+        return@withContext getRealm().where(Duara::class.java)
+            .equalTo("duara", duara).findAll().count()
+    }
 }
 
 suspend fun countMaduaraYote(): Long {

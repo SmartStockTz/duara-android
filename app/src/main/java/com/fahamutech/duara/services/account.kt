@@ -1,6 +1,5 @@
 package com.fahamutech.duara.services
 
-import android.util.Log
 import com.fahamutech.duara.models.IdentityModel
 import com.fahamutech.duara.models.UserModel
 import com.fahamutech.duara.utils.getHttpClient
@@ -20,7 +19,7 @@ private interface AccountService {
 suspend fun getIdentity(nickname: String): UserModel {
     return withContext(Dispatchers.IO) {
         val identity = getHttpClient(AccountService::class.java).identity().await()
-        Log.e("IDENTITY", identity.did)
+//        Log.e("IDENTITY", identity.did)
         if (identity.did.isEmpty()) {
             throw Throwable(message = "Imeshindwa kitengeza utambulisho wako, jaribu tena")
         } else {
@@ -44,7 +43,7 @@ suspend fun getFcmToken(): String {
         if (it == null) {
             throw Throwable(message = "Imeshindwa fungua akaunti, jaribu tena")
         } else {
-            Log.e("FCM TOKEN", it)
+//            Log.e("FCM TOKEN", it)
             return@withContext it
         }
     }

@@ -161,7 +161,7 @@ suspend fun syncContacts(context: Context): List<Duara> {
         if (user?.pub != null) {
             val contacts = normalisedNumberSignatures(context)
             val syncSendModel = DuaraSync()
-            syncSendModel.maduara = contacts.subList(0,100)
+            syncSendModel.maduara = contacts //.subList(0,100)
             syncSendModel.token = user.token
             syncSendModel.nickname = user.nickname
             syncSendModel.picture = user.picture

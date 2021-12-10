@@ -30,12 +30,11 @@ fun JiungeButton(jiungeState: JiungeState, navController: NavController, context
         Button(
             onClick = {
                 jiungeState.jiunge(context) {
-//                    Log.e("FUCKKK nav", "use****r")
                     navController.navigate("maongezi") {
-//                        popUpTo("jiunge"){
-//                            inclusive = true
-//                        }
-//                        launchSingleTop = true
+                        popUpTo(0) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
                     }
                 }
             },

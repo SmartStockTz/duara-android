@@ -1,16 +1,17 @@
 package com.fahamutech.duara.components
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.sharp.ArrowBack
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -21,10 +22,14 @@ import androidx.navigation.NavController
 import com.fahamutech.duara.R
 import com.fahamutech.duara.models.DuaraLocal
 import com.fahamutech.duara.states.MaduaraState
-import androidx.compose.foundation.lazy.items
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.viewModelScope
+import com.fahamutech.duara.services.countWaliomoKwenyeDuara
+import com.fahamutech.duara.utils.stringToSHA256
+import kotlinx.coroutines.launch
 
 @Composable
 fun MaduaraTopBar(
@@ -83,10 +88,12 @@ fun HelperMessage() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MaduaraLocalList(grouped: Map<Char, List<DuaraLocal>>, maduaraState: MaduaraState) {
+    val st = rememberLazyListState()
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        state = st
     ) {
         grouped.forEach { (initial, duaraLocalByInitial) ->
             stickyHeader {
@@ -100,15 +107,16 @@ fun MaduaraLocalList(grouped: Map<Char, List<DuaraLocal>>, maduaraState: Maduara
 }
 
 @Composable
-fun MaduaraLocalItem(i: DuaraLocal, maduaraState: MaduaraState) {
-    val waliomoKwenyeDuara by maduaraState.waliomoKwenyeDuara.observeAsState()
-    var message = "Upo mwenyewe."
-    if (waliomoKwenyeDuara!! > 1) {
-        val w = waliomoKwenyeDuara!! - 1
-        message = "Wewe na $w wengine."
-    }
+private fun MaduaraLocalItem(i: DuaraLocal, maduaraState: MaduaraState) {
+    var waliomo by remember { mutableStateOf(1) }
+    val message = waliomoMessage(waliomo, i)
     Row(
-        modifier = Modifier.absolutePadding(16.dp, 0.dp, 0.dp, 8.dp)
+        modifier = Modifier
+            .absolutePadding(16.dp, 0.dp, 0.dp, 8.dp)
+            .fillMaxWidth()
+            .clickable {
+                maduaraState.woteWaliomoKwenyeDuara(i.normalizedNumber)
+            }
     ) {
         Box(
             contentAlignment = Alignment.Center
@@ -144,9 +152,24 @@ fun MaduaraLocalItem(i: DuaraLocal, maduaraState: MaduaraState) {
                 fontSize = 14.sp,
                 color = Color(0xFF747272)
             )
-            LaunchedEffect(i.normalizedNumber) {
-                maduaraState.fetchDuaraMembers(i.normalizedNumber)
-            }
         }
     }
+    LaunchedEffect(i.normalizedNumber) {
+        waliomo = countDuaraMembers(i.normalizedNumber)
+    }
+}
+
+private suspend fun countDuaraMembers(normalizedNumber: String): Int {
+    val a = stringToSHA256(normalizedNumber)
+    val b = stringToSHA256(a)
+    return countWaliomoKwenyeDuara(b)
+}
+
+private fun waliomoMessage(waliomo: Int, i: DuaraLocal): String {
+    var message = "Upo mwenyewe."
+    if (waliomo > 1) {
+        val w = waliomo - 1
+        message = "Wewe na $w wengine."
+    }
+    return message
 }

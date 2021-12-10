@@ -23,5 +23,6 @@ open class Duara : RealmObject() {
 class DuaraLocal {
     var name: String = ""
     var normalizedNumber: String = ""
+    var waliomo: Int = 1
 }
 

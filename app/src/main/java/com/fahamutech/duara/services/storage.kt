@@ -46,19 +46,23 @@ suspend fun getUser(): UserModel? {
 suspend fun saveMaduara(maduara: List<Duara>) {
     withContext(Dispatchers.IO) {
         getRealm().executeTransactionAsync {
+            it.delete(Duara::class.java)
             it.insertOrUpdate(maduara)
         }
     }
 }
 
-fun getMaduaraYote(): List<Duara> {
-    return getRealm().where(Duara::class.java).findAllAsync().toList()
+suspend fun getMaduaraYote(): List<Duara> {
+    return withContext(Dispatchers.IO){
+        return@withContext getRealm().where(Duara::class.java).findAll().toList()
+    }
 }
 
 suspend fun getMaduaraByDuara(duara: String): List<Duara> {
     return withContext(Dispatchers.IO) {
-        return@withContext getRealm().where(Duara::class.java)
+        val a =  getRealm().where(Duara::class.java)
             .equalTo("duara", duara).findAll().toList()
+        return@withContext getRealm().copyFromRealm(a)
     }
 }
 

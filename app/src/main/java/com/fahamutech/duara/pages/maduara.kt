@@ -50,7 +50,6 @@ fun Maduara(
         )
     }
     LaunchedEffect("maduara") {
-        maduaraState.fetchMaduara(context)
         jiungeState.loadUser()
         if (user == null) {
             navController.navigate("jiunge") {
@@ -60,5 +59,6 @@ fun Maduara(
                 launchSingleTop = true
             }
         }
+        maduaraState.fetchMaduara(context)
     }
 }

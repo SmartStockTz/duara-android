@@ -31,16 +31,16 @@ suspend fun saveUser(userModel: UserModel) {
     }
 }
 
-suspend fun getUser(): UserModel? {
-    return withContext(Dispatchers.IO){
+fun getUser(): UserModel? {
+//    return withContext(Dispatchers.IO){
         val u = getRealm().where(UserModel::class.java)
             .equalTo("id", "duara_user").findFirst()
-        return@withContext if (u != null) {
+        return if (u != null) {
             getRealm().copyFromRealm(u)
         } else {
             u
         }
-    }
+//    }
 }
 
 suspend fun saveMaduara(maduara: List<Duara>) {

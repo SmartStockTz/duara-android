@@ -4,31 +4,30 @@ import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.fahamutech.duara.components.*
+import com.fahamutech.duara.models.UserModel
+import com.fahamutech.duara.services.getUser
 import com.fahamutech.duara.states.JiungeState
 import com.fahamutech.duara.states.MaduaraState
 
 @Composable
 fun Maduara(
     maduaraState: MaduaraState,
-    jiungeState: JiungeState,
     navController: NavController,
     context: Context
 ) {
     val localNumbers by maduaraState.maduaraLocalGroupByInitial.observeAsState()
-    val user by jiungeState.user.observeAsState()
+    var user: UserModel? by remember { mutableStateOf(null) }
     if (user != null) {
         Scaffold(
             topBar = { MaduaraTopBar(maduaraState, context, navController) },
             content = {
                 if (localNumbers?.keys?.isEmpty() == true) {
-                    Text("Hauna namba za simu au haujaruhusu kusoma namba za simu")
+                    Text("")
                 } else {
                     Column(
                         modifier = Modifier
@@ -41,9 +40,10 @@ fun Maduara(
                 }
             }
         )
+        UpoMwenyeweDialog(maduaraState, context)
     }
     LaunchedEffect("maduara") {
-        jiungeState.loadUser()
+        user = getUser()
         if (user == null) {
             navController.navigate("jiunge") {
                 popUpTo(0) {
@@ -51,7 +51,8 @@ fun Maduara(
                 }
                 launchSingleTop = true
             }
+        } else {
+            maduaraState.fetchMaduara(context)
         }
-        maduaraState.fetchMaduara(context)
     }
 }

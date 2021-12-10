@@ -37,10 +37,9 @@ class JiungeState : ViewModel() {
                     _getIdentityProgress.value = true
                     viewModelScope.launch(Dispatchers.Main) {
                         withTryCatch(run = {
-                            getIdentity(nickname.value!!)
-//                            Log.e("USER", identity.nickname)
+                            val u = getIdentity(nickname.value!!)
+                            _user.value = u
                             onFinish()
-                            loadUser()
                             _getIdentityProgress.value = false
                         }) {
                             message(it, context)

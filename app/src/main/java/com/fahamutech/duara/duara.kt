@@ -54,10 +54,10 @@ fun DuaraApp(
                     JiungePage(jiungeState, activity, navController)
                 }
                 composable("maongezi") {
-                    Maongezi(maongeziState, jiungeState, navController)
+                    Maongezi(maongeziState, navController)
                 }
                 composable("maduara") {
-                    Maduara(maduaraState, jiungeState, navController, activity)
+                    Maduara(maduaraState, navController, activity)
                 }
             }
         }

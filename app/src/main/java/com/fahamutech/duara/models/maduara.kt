@@ -8,6 +8,7 @@ open class DuaraSync {
     var pub: PubModel = PubModel()
     var picture: String = ""
     var token: String = ""
+    var device: String = ""
     var maduara: List<String> = mutableListOf()
 }
 
@@ -23,6 +24,5 @@ open class Duara : RealmObject() {
 class DuaraLocal {
     var name: String = ""
     var normalizedNumber: String = ""
-    var waliomo: Int = 1
 }
 

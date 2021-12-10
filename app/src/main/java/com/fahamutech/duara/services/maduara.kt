@@ -165,12 +165,14 @@ suspend fun syncContacts(context: Context): List<Duara> {
             syncSendModel.nickname = user.nickname
             syncSendModel.picture = user.picture
             syncSendModel.pub = user.pub!!
+            syncSendModel.device = getDeviceId(context.contentResolver)
             val maduara =
                 getHttpClient(MaduaraFunctions::class.java).syncs(syncSendModel).await()
             saveMaduara(maduara)
             return@withContext mutableListOf()
         } else {
-            throw Throwable(message = "Tumeshindwa jua taarifa zako")
+//            throw Throwable(message = "Tumeshindwa jua taarifa zako")
+            mutableListOf()
         }
     }
 }

@@ -1,8 +1,14 @@
 package com.fahamutech.duara.services
 
+import android.annotation.SuppressLint
+import android.content.ContentResolver
+import android.content.Context
+import android.provider.Settings
+import android.util.Log
 import com.fahamutech.duara.models.IdentityModel
 import com.fahamutech.duara.models.UserModel
 import com.fahamutech.duara.utils.getHttpClient
+import com.fahamutech.duara.utils.stringToSHA256
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
@@ -10,6 +16,7 @@ import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.await
 import retrofit2.http.GET
+import java.util.*
 
 private interface AccountService {
     @GET("/account/identity")
@@ -46,5 +53,17 @@ suspend fun getFcmToken(): String {
 //            Log.e("FCM TOKEN", it)
             return@withContext it
         }
+    }
+}
+
+@SuppressLint("HardwareIds")
+suspend fun getDeviceId(contentResolver: ContentResolver): String {
+    return withContext(Dispatchers.IO){
+        var id = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+//    Log.e("DEVICE", id)
+        if (id == null) {
+            id = UUID.randomUUID().toString()
+        }
+        return@withContext stringToSHA256(id)
     }
 }

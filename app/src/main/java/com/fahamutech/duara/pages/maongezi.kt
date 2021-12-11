@@ -1,6 +1,5 @@
 package com.fahamutech.duara.pages
 
-import android.util.Log
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -11,7 +10,6 @@ import com.fahamutech.duara.components.MaongeziMapyaFAB
 import com.fahamutech.duara.components.MaongeziTopBar
 import com.fahamutech.duara.models.UserModel
 import com.fahamutech.duara.services.getUser
-import com.fahamutech.duara.states.JiungeState
 import com.fahamutech.duara.states.MaongeziState
 
 @Composable
@@ -30,21 +28,24 @@ fun Maongezi(
                 MaongeziMapyaFAB(navController)
             },
             content = {
-                if (maongezi == null) {
-                    HamnaMaongezi()
-                }
-                if (maongezi?.isEmpty() == true) {
-                    HamnaMaongezi()
-                }
-                if (maongezi?.isNotEmpty() == true) {
-                    ListYaMaongeziYote()
+                if (maongezi != null) {
+                    if (maongezi!!.isEmpty()) {
+//                        Log.e("HAMNA MAONGEZI", "**********'")
+                        HamnaMaongezi()
+                    }
+                    if (maongezi!!.isNotEmpty()) {
+//                        Log.e("YAPO MAONGEZI", "**********'")
+                        ListYaMaongeziYote(maongezi!!)
+                    }
+                } else {
+//                    Log.e("NULL MAONGEZI", "**********'")
                 }
             }
         )
     }
     LaunchedEffect("maongezi") {
         user = getUser()
-        Log.e("JUGGG", user?.nickname?:"**********'")
+//        Log.e("JUGGG", user?.nickname ?: "**********'")
         if (user == null) {
             navController.navigate("jiunge") {
                 popUpTo(0) {
@@ -52,6 +53,8 @@ fun Maongezi(
                 }
                 launchSingleTop = true
             }
+        } else {
+            maongeziState.fetMaongezi()
         }
     }
 }

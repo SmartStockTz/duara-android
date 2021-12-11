@@ -2,7 +2,8 @@ package com.fahamutech.duara.states
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.ui.text.toLowerCase
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,12 +12,12 @@ import com.fahamutech.duara.models.DuaraLocal
 import com.fahamutech.duara.services.*
 import com.fahamutech.duara.utils.duaraLocalToRemoteHash
 import com.fahamutech.duara.utils.message
-import com.fahamutech.duara.utils.stringToSHA256
 import com.fahamutech.duara.utils.withTryCatch
 import kotlinx.coroutines.launch
 
 class MaduaraState : ViewModel() {
-    private val _showOneMemberDialog = MutableLiveData<Boolean>(false)
+    private val _showOneMemberDialog = MutableLiveData(false)
+//    private val _showChooseMemberSheet = MutableLiveData(false)
     private val _maduaraLocalGroupByInitial =
         MutableLiveData<Map<Char, List<DuaraLocal>>>(mutableMapOf())
     private val _maduaraSyncProgress = MutableLiveData(false)
@@ -25,6 +26,7 @@ class MaduaraState : ViewModel() {
     val maduaraLocalGroupByInitial: LiveData<Map<Char, List<DuaraLocal>>> =
         _maduaraLocalGroupByInitial
     val showOneMemberDialog: LiveData<Boolean> = _showOneMemberDialog
+//    val showChooseMemberSheet: LiveData<Boolean> = _showChooseMemberSheet
 
     fun fetchMaduara(context: Context) {
         viewModelScope.launch {
@@ -65,16 +67,21 @@ class MaduaraState : ViewModel() {
         }
     }
 
-    fun woteWaliomoKwenyeDuara(normalizedNumber: String) {
-        val b = duaraLocalToRemoteHash(normalizedNumber)
-        viewModelScope.launch {
-            val c = getMaduaraByDuara(b)
-            if (c.size == 1) {
-                toggleShowOneMemberDialog(true)
-            }
-//            Log.e("TAG-EFFECT", c.map { it.nickname }.toString())
-        }
-    }
+//    fun woteWaliomoKwenyeDuara(normalizedNumber: String) {
+//        val b = duaraLocalToRemoteHash(normalizedNumber)
+//        viewModelScope.launch {
+//            val c = getMaduaraByDuara(b)
+//            if (c.size == 1) {
+//                toggleShowOneMemberDialog(true)
+//            } else {
+////                toggleShowDuaraMember(true)
+//            }
+//        }
+//    }
+
+//    fun toggleShowDuaraMember(value: Boolean) {
+//        _showChooseMemberSheet.value = value
+//    }
 
     fun toggleShowOneMemberDialog(value: Boolean) {
         _showOneMemberDialog.value = value

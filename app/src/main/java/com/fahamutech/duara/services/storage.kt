@@ -6,6 +6,7 @@ import com.fahamutech.duara.models.Ongezi
 import com.fahamutech.duara.models.UserModel
 import io.realm.Realm
 import io.realm.RealmConfiguration
+import io.realm.RealmObject
 import io.realm.RealmResults
 import io.realm.kotlin.where
 import kotlinx.coroutines.Dispatchers
@@ -33,43 +34,49 @@ suspend fun saveUser(userModel: UserModel) {
 
 fun getUser(): UserModel? {
 //    return withContext(Dispatchers.IO){
-        val u = getRealm().where(UserModel::class.java)
-            .equalTo("id", "duara_user").findFirst()
-        return if (u != null) {
-            getRealm().copyFromRealm(u)
-        } else {
-            u
-        }
+    val u = getRealm().where(UserModel::class.java)
+        .equalTo("id", "duara_user").findFirst()
+    return if (u != null) {
+        getRealm().copyFromRealm(u)
+    } else {
+        u
+    }
 //    }
 }
 
 suspend fun saveMaduara(maduara: List<Duara>) {
     withContext(Dispatchers.IO) {
-        getRealm().executeTransactionAsync {
+        getRealm().executeTransaction {
             it.delete(Duara::class.java)
             it.insertOrUpdate(maduara)
         }
     }
 }
 
-suspend fun getMaduaraYote(): List<Duara> {
-    return withContext(Dispatchers.IO){
-        return@withContext getRealm().where(Duara::class.java).findAll().toList()
-    }
-}
+//suspend fun getMaduaraYote(): List<Duara> {
+//    return withContext(Dispatchers.IO) {
+//        return@withContext getRealm().where(Duara::class.java).findAll().toList()
+//    }
+//}
 
 suspend fun getMaduaraByDuara(duara: String): List<Duara> {
     return withContext(Dispatchers.IO) {
-        val a =  getRealm().where(Duara::class.java)
-            .equalTo("duara", duara).findAll().toList()
+        val u = getUser()
+        val a = getRealm().where(Duara::class.java)
+            .equalTo("duara", duara)
+            .notEqualTo("pub.x", u?.pub?.x)
+            .findAll().toList()
         return@withContext getRealm().copyFromRealm(a)
     }
 }
 
 suspend fun countWaliomoKwenyeDuara(duara: String): Int {
     return withContext(Dispatchers.IO) {
+        val u = getUser()
         return@withContext getRealm().where(Duara::class.java)
-            .equalTo("duara", duara).findAll().count()
+            .equalTo("duara", duara)
+            .notEqualTo("pub.x", u?.pub?.x)
+            .findAll().count()
     }
 }
 
@@ -79,6 +86,30 @@ suspend fun countMaduaraYote(): Long {
     }
 }
 
-fun getConversions(): List<Ongezi> {
-    return getRealm().where(Ongezi::class.java).findAll().toList()
+suspend fun getMaongezi(): List<Ongezi> {
+    return withContext(Dispatchers.IO) {
+        val o = getRealm().where(Ongezi::class.java).findAll().toList()
+        return@withContext getRealm().copyFromRealm(o)
+    }
 }
+
+suspend fun saveOngezi(ongezi: Ongezi) {
+    withContext(Dispatchers.IO) {
+        getRealm().executeTransaction {
+            it.insertOrUpdate(ongezi)
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

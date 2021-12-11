@@ -4,16 +4,20 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.fahamutech.duara.pages.JiungePage
 import com.fahamutech.duara.pages.Maduara
 import com.fahamutech.duara.pages.Maongezi
+import com.fahamutech.duara.pages.OngeziPage
 import com.fahamutech.duara.services.initLocalDatabase
 import com.fahamutech.duara.states.JiungeState
 import com.fahamutech.duara.states.MaduaraState
@@ -21,13 +25,14 @@ import com.fahamutech.duara.states.MaongeziState
 import com.fahamutech.duara.ui.theme.DuaraTheme
 
 class DuaraApp : ComponentActivity() {
+
+    @OptIn(ExperimentalFoundationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initLocalDatabase(this)
         val jiungeState by viewModels<JiungeState>()
         val maongeziState by viewModels<MaongeziState>()
         val maduaraState by viewModels<MaduaraState>()
-//        maduaraState.fetchMaduara(this)
         setContent {
             DuaraApp(
                 jiungeState = jiungeState,
@@ -39,6 +44,7 @@ class DuaraApp : ComponentActivity() {
     }
 }
 
+@ExperimentalFoundationApi
 @Composable
 fun DuaraApp(
     jiungeState: JiungeState = viewModel(),
@@ -55,6 +61,12 @@ fun DuaraApp(
                 }
                 composable("maongezi") {
                     Maongezi(maongeziState, navController)
+                }
+                composable(
+                    "ongezi/{id}",
+                    arguments = listOf(navArgument("id") { type = NavType.StringType })
+                ) {
+                    OngeziPage(it.arguments?.getString("id"))
                 }
                 composable("maduara") {
                     Maduara(maduaraState, navController, activity)

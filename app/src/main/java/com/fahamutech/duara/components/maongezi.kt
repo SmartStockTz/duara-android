@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.fahamutech.duara.R
+import com.fahamutech.duara.models.Ongezi
 import com.fahamutech.duara.ui.theme.DuaraGreen
 
 @Composable
@@ -51,8 +52,8 @@ fun MaongeziMapyaFAB(navController: NavController) {
 }
 
 @Composable
-fun ListYaMaongeziYote() {
-    Text("Maongezi yote")
+fun ListYaMaongeziYote(maongezi: List<Ongezi>) {
+    Text("Maongezi yote ${maongezi.size}")
 }
 
 @Composable

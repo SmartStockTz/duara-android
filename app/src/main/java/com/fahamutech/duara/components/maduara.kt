@@ -23,19 +23,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.fahamutech.duara.R
+import com.fahamutech.duara.models.Duara
 import com.fahamutech.duara.models.DuaraLocal
 import com.fahamutech.duara.services.countWaliomoKwenyeDuara
+import com.fahamutech.duara.services.getMaduaraByDuara
 import com.fahamutech.duara.states.MaduaraState
+import com.fahamutech.duara.utils.duaraLocalToRemoteHash
 import com.fahamutech.duara.utils.stringToSHA256
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import java.util.*
 
 @Composable
 fun MaduaraTopBar(
@@ -155,9 +159,14 @@ fun HelperMessage() {
     )
 }
 
+@ExperimentalMaterialApi
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MaduaraLocalList(grouped: Map<Char, List<DuaraLocal>>, maduaraState: MaduaraState) {
+fun MaduaraLocalList(
+    grouped: Map<Char, List<DuaraLocal>>,
+    maduaraState: MaduaraState,
+    showModalSheet: (List<Duara>) -> Unit
+) {
     val st = rememberLazyListState()
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -170,26 +179,59 @@ fun MaduaraLocalList(grouped: Map<Char, List<DuaraLocal>>, maduaraState: Maduara
                 Text(initial.toString())
             }
             items(duaraLocalByInitial) { duaraLocal ->
-                MaduaraLocalItem(duaraLocal, maduaraState)
+                MaduaraLocalItem(duaraLocal, maduaraState, showModalSheet)
             }
         }
     }
 }
 
+@ExperimentalMaterialApi
 @Composable
-private fun MaduaraLocalItem(i: DuaraLocal, maduaraState: MaduaraState) {
+private fun MaduaraLocalItem(
+    i: DuaraLocal,
+    maduaraState: MaduaraState,
+    showModalSheet: (List<Duara>) -> Unit
+) {
+    val scope = rememberCoroutineScope()
     var waliomo by remember { mutableStateOf(1) }
-    val message = waliomoMessage(waliomo, i)
+    val message = waliomoMessage(waliomo)
+    MaduaraLocalItemView(i, message) {
+        scope.launch {
+            showDuaraMembersOrPromo(i, maduaraState, showModalSheet)
+        }
+    }
+    LaunchedEffect(i.normalizedNumber) {
+        waliomo = countDuaraMembers(i.normalizedNumber)
+    }
+}
+
+private suspend fun showDuaraMembersOrPromo(
+    duaraLocal: DuaraLocal,
+    maduaraState: MaduaraState,
+    showModalSheet: (List<Duara>) -> Unit
+) {
+    val b = duaraLocalToRemoteHash(duaraLocal.normalizedNumber)
+    val c = getMaduaraByDuara(b)
+    if (c.isEmpty()) {
+        maduaraState.toggleShowOneMemberDialog(true)
+    } else {
+        showModalSheet(c)
+    }
+}
+
+@Composable
+private fun MaduaraLocalItemView(
+    i: DuaraLocal, message: String, onClick: () -> Unit
+) {
     Row(
         modifier = Modifier
-            .absolutePadding(16.dp, 0.dp, 0.dp, 8.dp)
             .fillMaxWidth()
-            .clickable {
-                maduaraState.woteWaliomoKwenyeDuara(i.normalizedNumber)
-            }
+            .absolutePadding(0.dp, 0.dp, 0.dp, 8.dp)
+            .clickable { onClick() }
     ) {
         Box(
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.absolutePadding(16.dp)
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_list_item_bg),
@@ -203,7 +245,7 @@ private fun MaduaraLocalItem(i: DuaraLocal, maduaraState: MaduaraState) {
             )
         }
         Column(
-            modifier = Modifier.absolutePadding(8.dp)
+            modifier = Modifier.absolutePadding(8.dp, 0.dp, 8.dp, 0.dp)
         ) {
             Text(
                 text = i.name,
@@ -224,9 +266,6 @@ private fun MaduaraLocalItem(i: DuaraLocal, maduaraState: MaduaraState) {
             )
         }
     }
-    LaunchedEffect(i.normalizedNumber) {
-        waliomo = countDuaraMembers(i.normalizedNumber)
-    }
 }
 
 private suspend fun countDuaraMembers(normalizedNumber: String): Int {
@@ -235,11 +274,10 @@ private suspend fun countDuaraMembers(normalizedNumber: String): Int {
     return countWaliomoKwenyeDuara(b)
 }
 
-private fun waliomoMessage(waliomo: Int, i: DuaraLocal): String {
+private fun waliomoMessage(waliomo: Int): String {
     var message = "Upo mwenyewe."
-    if (waliomo > 1) {
-        val w = waliomo - 1
-        message = "Wewe na $w wengine."
+    if (waliomo > 0) {
+        message = "Wewe na $waliomo wengine."
     }
     return message
 }

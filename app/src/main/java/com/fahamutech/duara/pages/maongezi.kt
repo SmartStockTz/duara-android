@@ -1,5 +1,8 @@
 package com.fahamutech.duara.pages
 
+import android.content.Context
+import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -12,10 +15,12 @@ import com.fahamutech.duara.models.UserModel
 import com.fahamutech.duara.services.getUser
 import com.fahamutech.duara.states.MaongeziState
 
+@ExperimentalFoundationApi
 @Composable
 fun Maongezi(
     maongeziState: MaongeziState,
     navController: NavController,
+    context: Context
 ) {
     val maongezi by maongeziState.maongezi.observeAsState()
     var user: UserModel? by remember { mutableStateOf(null) }
@@ -35,10 +40,10 @@ fun Maongezi(
                     }
                     if (maongezi!!.isNotEmpty()) {
 //                        Log.e("YAPO MAONGEZI", "**********'")
-                        ListYaMaongeziYote(maongezi!!)
+                        ListYaMaongeziYote(maongezi!!, maongeziState, navController, context)
                     }
                 } else {
-//                    Log.e("NULL MAONGEZI", "**********'")
+                    Log.e("NULL MAONGEZI", "**********'")
                 }
             }
         )

@@ -22,6 +22,7 @@ import com.fahamutech.duara.services.initLocalDatabase
 import com.fahamutech.duara.states.JiungeState
 import com.fahamutech.duara.states.MaduaraState
 import com.fahamutech.duara.states.MaongeziState
+import com.fahamutech.duara.states.OngeziState
 import com.fahamutech.duara.ui.theme.DuaraTheme
 
 class DuaraApp : ComponentActivity() {
@@ -33,11 +34,13 @@ class DuaraApp : ComponentActivity() {
         val jiungeState by viewModels<JiungeState>()
         val maongeziState by viewModels<MaongeziState>()
         val maduaraState by viewModels<MaduaraState>()
+        val ongeziState by viewModels<OngeziState>()
         setContent {
             DuaraApp(
                 jiungeState = jiungeState,
                 maongeziState = maongeziState,
                 maduaraState = maduaraState,
+                ongeziState = ongeziState,
                 this
             )
         }
@@ -50,6 +53,7 @@ fun DuaraApp(
     jiungeState: JiungeState = viewModel(),
     maongeziState: MaongeziState = viewModel(),
     maduaraState: MaduaraState = viewModel(),
+    ongeziState: OngeziState,
     activity: ComponentActivity
 ) {
     val navController = rememberNavController()
@@ -60,13 +64,15 @@ fun DuaraApp(
                     JiungePage(jiungeState, activity, navController)
                 }
                 composable("maongezi") {
-                    Maongezi(maongeziState, navController)
+                    Maongezi(maongeziState, navController, activity)
                 }
                 composable(
                     "ongezi/{id}",
                     arguments = listOf(navArgument("id") { type = NavType.StringType })
                 ) {
-                    OngeziPage(it.arguments?.getString("id"))
+                    OngeziPage(
+                        it.arguments?.getString("id"), ongeziState, navController, activity
+                    )
                 }
                 composable("maduara") {
                     Maduara(maduaraState, navController, activity)

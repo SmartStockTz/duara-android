@@ -15,6 +15,7 @@
         <activity
             android:name=".DuaraApp"
             android:exported="true"
+            android:windowSoftInputMode="adjustResize"
             android:label="@string/app_name"
             android:theme="@style/Theme.Duara.NoActionBar">
             <intent-filter>

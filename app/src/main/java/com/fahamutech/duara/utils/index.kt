@@ -5,11 +5,12 @@ import android.content.Intent
 import android.widget.Toast
 import com.fahamutech.duara.BuildConfig
 import okhttp3.OkHttpClient
-import okio.Timeout
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.StringBuilder
 import java.security.MessageDigest
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 const val baseUrl = "https://maduara-faas.bfast.fahamutech.com"
@@ -38,7 +39,7 @@ fun stringToSHA256(data: String): String {
     return sb.toString()
 }
 
-fun message(message: String, context: Context) {
+fun messageToApp(message: String, context: Context) {
     Toast.makeText(context, message, Toast.LENGTH_LONG).show()
 }
 
@@ -67,4 +68,14 @@ fun shareApp(context: Context) {
     }
     val shareIntent = Intent.createChooser(sendIntent, null)
     context.startActivity(shareIntent)
+}
+
+fun stringFromDate(date: Date): String {
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+    return dateFormat.format(date)
+}
+
+fun dateFromString(string: String): Date {
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+    return dateFormat.parse(string) ?: Date()
 }

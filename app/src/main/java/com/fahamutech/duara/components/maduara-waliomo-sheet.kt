@@ -24,8 +24,8 @@ import com.fahamutech.duara.R
 import com.fahamutech.duara.models.Duara
 import com.fahamutech.duara.models.Ongezi
 import com.fahamutech.duara.services.saveOngezi
+import com.fahamutech.duara.utils.stringFromDate
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.*
 
 @ExperimentalFoundationApi
@@ -103,11 +103,10 @@ fun DuaraMemberItem(duaraLocal: Duara, navController: NavController) {
 }
 
 private suspend fun startMaongeziNaMtu(duaraLocal: Duara, navController: NavController) {
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault())
     val ongezi = Ongezi()
-    ongezi.id = duaraLocal.id
+    ongezi.id = duaraLocal.pub!!.x
     ongezi.duara = duaraLocal
-    ongezi.date = dateFormat.format(Date())
+    ongezi.date = stringFromDate(Date())
     saveOngezi(ongezi)
     navController.navigate("ongezi/${ongezi.id}") {
         popUpTo("maongezi")

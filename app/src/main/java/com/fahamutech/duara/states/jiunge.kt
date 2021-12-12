@@ -9,7 +9,7 @@ import com.fahamutech.duara.models.UserModel
 import com.fahamutech.duara.services.ensureContactPermission
 import com.fahamutech.duara.services.getIdentity
 import com.fahamutech.duara.services.getUser
-import com.fahamutech.duara.utils.message
+import com.fahamutech.duara.utils.messageToApp
 import com.fahamutech.duara.utils.withTryCatch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,7 +31,7 @@ class JiungeState : ViewModel() {
         val n = nickname.value
         if (n != null) {
             if (n.isEmpty().or(n.length < 3)) {
-                message("Jina linatakiwa liwe angalau herudi 3", context)
+                messageToApp("Jina linatakiwa liwe angalau herudi 3", context)
             } else {
                 ensureContactPermission(context) {
                     _getIdentityProgress.value = true
@@ -42,13 +42,13 @@ class JiungeState : ViewModel() {
                             onFinish()
                             _getIdentityProgress.value = false
                         }) {
-                            message(it, context)
+                            messageToApp(it, context)
                         }
                     }
                 }
             }
         } else {
-            message("Jina linatakiwa liwe angalau herudi 3", context)
+            messageToApp("Jina linatakiwa liwe angalau herudi 3", context)
         }
     }
 

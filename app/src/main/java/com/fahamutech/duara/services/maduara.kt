@@ -14,7 +14,7 @@ import com.fahamutech.duara.models.Duara
 import com.fahamutech.duara.models.DuaraLocal
 import com.fahamutech.duara.models.DuaraSync
 import com.fahamutech.duara.utils.getHttpClient
-import com.fahamutech.duara.utils.message
+import com.fahamutech.duara.utils.messageToApp
 import com.fahamutech.duara.utils.stringToSHA256
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -41,7 +41,7 @@ private fun educationalDialog(activity: Activity, granted: () -> Unit) {
             ensureContactPermission(activity, granted)
         }.setNegativeButton("Ghairi") { d, b ->
             d.dismiss()
-            message(
+            messageToApp(
                 "Duara kufanya kazi inabidi uruhusu kuona namba zako, ili uweze ona " +
                         "marafiki wa kuchati nao.", activity
             )
@@ -66,7 +66,7 @@ fun ensureContactPermission(activity: Activity, granted: () -> Unit) {
                 mutableListOf(Manifest.permission.READ_CONTACTS).toTypedArray(),
                 321
             )
-            message(
+            messageToApp(
                 "Duara kufanya kazi inabidi uruhusu kuona namba zako, ili uweze ona " +
                         "marafiki wa kuchati nao.", activity
             )

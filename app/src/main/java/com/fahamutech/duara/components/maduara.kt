@@ -106,7 +106,9 @@ private fun TopBarNormal(
 }
 
 @Composable
-private fun TopBarSearch(maduaraState: MaduaraState, context: Context, onSearchClose: () -> Unit) {
+private fun TopBarSearch(
+    maduaraState: MaduaraState, context: Context, onSearchClose: () -> Unit
+) {
 //    var maduaraFilter by maduaraState.maduaraFilter.observeAsState()
     var searchKeyword by remember { mutableStateOf("") }
     val focusRequester = FocusRequester()

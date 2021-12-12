@@ -2,16 +2,13 @@ package com.fahamutech.duara.states
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fahamutech.duara.models.DuaraLocal
 import com.fahamutech.duara.services.*
-import com.fahamutech.duara.utils.duaraLocalToRemoteHash
-import com.fahamutech.duara.utils.message
+import com.fahamutech.duara.utils.messageToApp
 import com.fahamutech.duara.utils.withTryCatch
 import kotlinx.coroutines.launch
 
@@ -45,7 +42,7 @@ class MaduaraState : ViewModel() {
             }) {
                 _maduaraSyncProgress.value = false
                 Log.e("FU Sync results", it)
-                message(it, context)
+                messageToApp(it, context)
             }
         }
     }
@@ -61,7 +58,7 @@ class MaduaraState : ViewModel() {
             withTryCatch(run = {
                 _sm(context)
             }) {
-                message(it, context)
+                messageToApp(it, context)
                 _maduaraSyncProgress.value = false
             }
         }
@@ -100,7 +97,7 @@ class MaduaraState : ViewModel() {
                     it.name[0]
                 }
             }) {
-                message(it, context)
+                messageToApp(it, context)
             }
         }
     }

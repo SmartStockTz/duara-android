@@ -4,11 +4,7 @@ import android.content.Context
 import com.fahamutech.duara.models.Duara
 import com.fahamutech.duara.models.Ongezi
 import com.fahamutech.duara.models.UserModel
-import io.realm.Realm
-import io.realm.RealmConfiguration
-import io.realm.RealmObject
-import io.realm.RealmResults
-import io.realm.kotlin.where
+import io.realm.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -88,8 +84,22 @@ suspend fun countMaduaraYote(): Long {
 
 suspend fun getMaongezi(): List<Ongezi> {
     return withContext(Dispatchers.IO) {
-        val o = getRealm().where(Ongezi::class.java).findAll().toList()
+        val o = getRealm().where(Ongezi::class.java)
+            .sort("date", Sort.DESCENDING)
+            .findAll().toList()
         return@withContext getRealm().copyFromRealm(o)
+    }
+}
+
+suspend fun getOngeziInStore(id: String): Ongezi? {
+    return withContext(Dispatchers.IO) {
+        val r = getRealm()
+        val a = r.where(Ongezi::class.java).equalTo("id", id).findFirst()
+        if (a != null) {
+            return@withContext r.copyFromRealm(a)
+        } else {
+            return@withContext null
+        }
     }
 }
 
@@ -97,6 +107,16 @@ suspend fun saveOngezi(ongezi: Ongezi) {
     withContext(Dispatchers.IO) {
         getRealm().executeTransaction {
             it.insertOrUpdate(ongezi)
+        }
+    }
+}
+
+suspend fun futaOngeziInStore(ongezi: Ongezi) {
+    withContext(Dispatchers.IO) {
+        getRealm().executeTransaction {
+            it.where(Ongezi::class.java)
+                .equalTo("id", ongezi.id)
+                .findFirst()?.deleteFromRealm()
         }
     }
 }

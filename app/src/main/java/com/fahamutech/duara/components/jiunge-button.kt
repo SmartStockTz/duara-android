@@ -1,6 +1,7 @@
 package com.fahamutech.duara.components
 
 import android.app.Activity
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,14 +29,19 @@ fun JiungeButton(jiungeState: JiungeState, navController: NavController, context
     ) {
         Button(
             onClick = {
-                jiungeState.jiunge(context){
-                    navController.navigate("maongezi")
+                jiungeState.jiunge(context) {
+                    navController.navigate("maongezi") {
+                        popUpTo(0) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = !onFetching!!
         ) {
-            if (onFetching as Boolean){
+            if (onFetching as Boolean) {
                 Text(
                     "Subiri...",
                     modifier = Modifier.fillMaxWidth(),
@@ -44,7 +50,7 @@ fun JiungeButton(jiungeState: JiungeState, navController: NavController, context
                     lineHeight = 19.sp,
                     fontSize = 16.sp
                 )
-            }else{
+            } else {
                 Text(
                     "Jiunge.",
                     modifier = Modifier.fillMaxWidth(),

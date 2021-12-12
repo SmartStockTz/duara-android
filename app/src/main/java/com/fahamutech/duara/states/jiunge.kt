@@ -1,8 +1,6 @@
 package com.fahamutech.duara.states
 
 import android.app.Activity
-import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,15 +8,19 @@ import androidx.lifecycle.viewModelScope
 import com.fahamutech.duara.models.UserModel
 import com.fahamutech.duara.services.ensureContactPermission
 import com.fahamutech.duara.services.getIdentity
-import com.fahamutech.duara.services.saveUser
+import com.fahamutech.duara.services.getUser
+import com.fahamutech.duara.utils.message
+import com.fahamutech.duara.utils.withTryCatch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class JiungeState : ViewModel() {
     private val _getIdentityProgress = MutableLiveData(false)
+    private val _user = MutableLiveData<UserModel?>(null)
     val getIdentityProgress: LiveData<Boolean> = _getIdentityProgress
+    val user: LiveData<UserModel?> = _user
 
-    private val _nickname = MutableLiveData("");
+    private val _nickname = MutableLiveData("")
     val nickname: LiveData<String> = _nickname
 
     fun onNicknameChange(value: String) {
@@ -26,30 +28,38 @@ class JiungeState : ViewModel() {
     }
 
     fun jiunge(context: Activity, onFinish: () -> Unit) {
-        fun message() {
-            Toast
-                .makeText(context, "Jina linatakiwa liwe angalau herudi 3", Toast.LENGTH_SHORT)
-                .show()
-        }
-
         val n = nickname.value
         if (n != null) {
             if (n.isEmpty().or(n.length < 3)) {
-                message()
+                message("Jina linatakiwa liwe angalau herudi 3", context)
             } else {
                 ensureContactPermission(context) {
                     _getIdentityProgress.value = true
                     viewModelScope.launch(Dispatchers.Main) {
-                        getIdentity(nickname.value!!, context) {
-                            it?.nickname?.let { it1 -> Log.e("USER", it1) }
-                            _getIdentityProgress.value = false
+                        withTryCatch(run = {
+                            val u = getIdentity(nickname.value!!)
+                            _user.value = u
                             onFinish()
+                            _getIdentityProgress.value = false
+                        }) {
+                            message(it, context)
                         }
                     }
                 }
             }
         } else {
-            message()
+            message("Jina linatakiwa liwe angalau herudi 3", context)
+        }
+    }
+
+    fun loadUser() {
+        viewModelScope.launch {
+            val u = getUser()
+            if (u == null) {
+                _user.value = null
+            } else {
+                _user.value = u
+            }
         }
     }
 }

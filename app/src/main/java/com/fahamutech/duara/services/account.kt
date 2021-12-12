@@ -1,73 +1,69 @@
 package com.fahamutech.duara.services
 
+import android.annotation.SuppressLint
+import android.content.ContentResolver
 import android.content.Context
+import android.provider.Settings
 import android.util.Log
-import android.widget.Toast
 import com.fahamutech.duara.models.IdentityModel
 import com.fahamutech.duara.models.UserModel
+import com.fahamutech.duara.utils.getHttpClient
+import com.fahamutech.duara.utils.stringToSHA256
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import retrofit2.Call
-import retrofit2.Retrofit
 import retrofit2.await
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
-
-private const val baseUrl = "https://maduara-faas.bfast.fahamutech.com"
+import java.util.*
 
 private interface AccountService {
     @GET("/account/identity")
     fun identity(): Call<IdentityModel>
 }
 
-private fun getHttpClient(): AccountService {
-    val retrofit = Retrofit.Builder()
-        .addConverterFactory(GsonConverterFactory.create())
-        .baseUrl(baseUrl)
-        .build()
-    return retrofit.create(AccountService::class.java)
-}
-
-private fun errorMessage(message: String, context: Context) {
-    Toast.makeText(
-        context, message,
-        Toast.LENGTH_LONG
-    ).show()
-}
-
-suspend fun getIdentity(nickname: String, context: Context, onFinish: (user: UserModel?) -> Unit) {
-    try {
-        val identity = getHttpClient().identity().await()
-        Log.e("IDENTITY", identity.did)
+suspend fun getIdentity(nickname: String): UserModel {
+    return withContext(Dispatchers.IO) {
+        val identity = getHttpClient(AccountService::class.java).identity().await()
+//        Log.e("IDENTITY", identity.did)
         if (identity.did.isEmpty()) {
-            errorMessage("Imeshindwa kitengeza utambulisho wako, jaribu tena", context)
-            onFinish(null)
+            throw Throwable(message = "Imeshindwa kitengeza utambulisho wako, jaribu tena")
         } else {
-            getFcmToken(context) { token ->
-                val user = UserModel()
-                user.did = identity.did
-                user.nickname = nickname
-                user.picture = ""
-                user.priv = identity.priv
-                user.pub = identity.pub
-                user.token = token
-                saveUser(user)
-                onFinish(user)
-            }
+            val token = getFcmToken()
+            val user = UserModel()
+            user.did = identity.did
+            user.nickname = nickname
+            user.picture = ""
+            user.priv = identity.priv
+            user.pub = identity.pub
+            user.token = token
+            saveUser(user)
+            return@withContext user
         }
-    } catch (e: Throwable) {
-        errorMessage(e.message!!, context)
-        onFinish(null)
     }
 }
 
-fun getFcmToken(context: Context, onFinish: (token: String) -> Unit) {
-    FirebaseMessaging.getInstance().token.addOnCompleteListener {
-        if (!it.isSuccessful) {
-            errorMessage("Imeshindwa fungua akaunti, jaribu tena", context)
-            return@addOnCompleteListener
+suspend fun getFcmToken(): String {
+    return withContext(Dispatchers.IO) {
+        val it = FirebaseMessaging.getInstance().token.await()
+        if (it == null) {
+            throw Throwable(message = "Imeshindwa fungua akaunti, jaribu tena")
+        } else {
+//            Log.e("FCM TOKEN", it)
+            return@withContext it
         }
-        val token = it.result!!
-        Log.e("FCM TOKEN", token)
-        onFinish(token)
+    }
+}
+
+@SuppressLint("HardwareIds")
+suspend fun getDeviceId(contentResolver: ContentResolver): String {
+    return withContext(Dispatchers.IO){
+        var id = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+//    Log.e("DEVICE", id)
+        if (id == null) {
+            id = UUID.randomUUID().toString()
+        }
+        return@withContext stringToSHA256(id)
     }
 }

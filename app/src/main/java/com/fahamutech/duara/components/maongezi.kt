@@ -1,7 +1,6 @@
 package com.fahamutech.duara.components
 
 import android.content.Context
-import android.text.format.DateUtils
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,15 +16,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.fahamutech.duara.R
 import com.fahamutech.duara.models.Ongezi
+import com.fahamutech.duara.services.getLastMessageInOngezi
 import com.fahamutech.duara.states.MaongeziState
 import com.fahamutech.duara.ui.theme.DuaraGreen
-import com.fahamutech.duara.utils.dateFromString
-import java.util.*
+import com.fahamutech.duara.utils.timeAgo
+import kotlinx.coroutines.launch
 
 @Composable
 fun MaongeziTopBar() {
@@ -81,6 +82,8 @@ private fun OngeziItem(
     navController: NavController,
     context: Context
 ) {
+    val scope = rememberCoroutineScope()
+    var message by remember { mutableStateOf("") }
     var showDeleteDialog by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
@@ -102,7 +105,7 @@ private fun OngeziItem(
             modifier = Modifier.absolutePadding(6.dp, 8.dp, 16.dp, 8.dp),
         ) {
             OngeziItemNameAndTime(ongezi)
-            OngeziItemLastMessage(ongezi)
+            OngeziItemLastMessage(message)
         }
     }
     ShowDeleteConversationDialog(showDeleteDialog) {
@@ -119,7 +122,11 @@ private fun OngeziItem(
             }
         }
     }
-
+    LaunchedEffect(ongezi.id){
+        scope.launch {
+            message = getLastMessageInOngezi(ongezi.id)
+        }
+    }
 }
 
 @Composable
@@ -147,13 +154,15 @@ private fun ShowDeleteConversationDialog(
 }
 
 @Composable
-private fun OngeziItemLastMessage(ongezi: Ongezi) {
-    val message by remember { mutableStateOf("") }
+private fun OngeziItemLastMessage(message: String) {
     Text(
         text = message,
         fontWeight = FontWeight(300),
         fontSize = 13.sp,
-        color = Color(0xFF747272)
+        color = Color(0xFF747272),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier.absolutePadding(0.dp,0.dp,48.dp,0.dp)
     )
 }
 
@@ -161,7 +170,7 @@ private fun OngeziItemLastMessage(ongezi: Ongezi) {
 private fun OngeziItemNameAndTime(ongezi: Ongezi) {
     Row {
         Text(
-            text = ongezi.duara!!.nickname,
+            text = ongezi.duara_nickname,
             fontWeight = FontWeight(500),
             fontSize = 16.sp
         )
@@ -187,13 +196,8 @@ private fun OngeziItemPicture(ongezi: Ongezi) {
             contentDescription = "profile picture",
             modifier = Modifier.size(44.dp)
         )
-//            Icon(
-//                Icons.Sharp.Person,
-//                contentDescription = "picture",
-//                tint = Color.White
-//            )
         Text(
-            text = ongezi.duara!!.nickname[0].toString(),
+            text = ongezi.duara_nickname[0].toString(),
             fontWeight = FontWeight(400),
             color = Color.White,
             fontSize = 16.sp
@@ -201,20 +205,7 @@ private fun OngeziItemPicture(ongezi: Ongezi) {
     }
 }
 
-private fun timeAgo(dateString: String): String {
-    return try {
-        val date: Date = dateFromString(dateString)
-        DateUtils.getRelativeTimeSpanString(date.time).toString()
-            .replace("ago", "")
-            .replace("hours", "h")
-            .replace("hour", "h")
-            .replace("minutes", "min")
-            .replace("yesterday", "Jana")
-            .replace("Yesterday", "Jana")
-    } catch (_: Throwable) {
-        ""
-    }
-}
+
 
 @Composable
 fun HamnaMaongezi() {

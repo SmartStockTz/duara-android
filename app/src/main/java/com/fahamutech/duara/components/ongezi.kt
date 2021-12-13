@@ -1,46 +1,41 @@
 package com.fahamutech.duara.components
 
 import android.content.Context
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material.icons.sharp.ArrowBack
-import androidx.compose.material.icons.sharp.Search
 import androidx.compose.material.icons.sharp.Send
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
-import com.fahamutech.duara.models.Ongezi
+import com.fahamutech.duara.R
+import com.fahamutech.duara.models.*
 import com.fahamutech.duara.states.OngeziState
-import com.fahamutech.duara.ui.theme.DuaraBlue
+import com.fahamutech.duara.utils.stringFromDate
+import java.util.*
 
 @Composable
 fun OngeziTopBar(
@@ -73,7 +68,7 @@ private fun OngeziTopBarNormal(
             Icon(Icons.Sharp.ArrowBack, "back")
         }
         Text(
-            text = ongezi.duara!!.nickname,
+            text = ongezi.duara_nickname,
             fontSize = 24.sp,
             fontWeight = FontWeight(500),
             lineHeight = 36.sp,
@@ -131,43 +126,158 @@ private fun OngeziTopBarSearch(
 }
 
 @Composable
-fun OngeziBody() {
-    val s = rememberScrollState()
+fun OngeziBody(
+    ongeziState: OngeziState,
+    ongezi: Ongezi,
+    user: UserModel
+) {
+    val messages by ongeziState.messages.observeAsState()
     val nestedScrollConnection = remember {
-        object : NestedScrollConnection {
-//            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-            // try to consume before LazyColumn to collapse toolbar if needed, hence pre-scroll
-//                val delta = available.y
-//                val newOffset = toolbarOffsetHeightPx.value + delta
-//                toolbarOffsetHeightPx.value = newOffset.coerceIn(-toolbarHeightPx, 0f)
-            // here's the catch: let's pretend we consumed 0 in any case, since we want
-            // LazyColumn to scroll anyway for good UX
-            // We're basically watching scroll without taking it
-//                return Offset.Zero
-//            }
-        }
+        object : NestedScrollConnection {}
     }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(nestedScrollConnection)
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-        ) {
-//            item {
-//                Text(
-//                    text = "Texts"
-//                )
-//            }
+        OngeziMessageList(
+            messages = messages!!,
+            modifier = Modifier.weight(1f),
+            user = user
+        )
+        OngeziComposeBottomBar(ongezi, ongeziState, user)
+    }
+    DisposableEffect(ongezi.id) {
+        ongeziState.fetchMessage(ongezi.id)
+        onDispose {
+            ongeziState.resetMessages()
         }
-        OngeziComposeBottomBar()
     }
 }
 
 @Composable
-fun OngeziComposeBottomBar() {
+fun OngeziMessageList(messages: MutableList<MessageLocal>, user: UserModel, modifier: Modifier) {
+    val state = rememberLazyListState()
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = PaddingValues(16.dp, 0.dp),
+        state = state,
+        reverseLayout = true
+    ) {
+        messageByTime(messages).forEach { (date, m) ->
+            messageInTimeGroupByOwner(m).forEach { (own, msg) ->
+                items(msg) { message ->
+                    val hO = msg.indexOf(message) != msg.size - 1
+                    if (user.pub!!.x != message.from!!.x) {
+                        MessageListItemReceive(hO, message)
+                    }
+                    if (user.pub!!.x == message.from!!.x) {
+                        MessageListItemSent(hO, message)
+                    }
+                }
+            }
+            item {
+                MessageListTimeStamp(date)
+            }
+        }
+    }
+}
+
+fun messageInTimeGroupByOwner(
+    messageList: List<MessageLocal>
+): MutableMap<String, List<MessageLocal>> {
+    return messageList.groupBy { m ->
+        m.fromNickname
+    }.toMutableMap()
+}
+
+fun messageByTime(messages: MutableList<MessageLocal>): MutableMap<String, List<MessageLocal>> {
+    return messages.groupBy {
+        val a = it.date.split(":").toMutableList()
+        a.removeLastOrNull()
+        a.joinToString("")
+    }.toMutableMap()
+}
+
+@Composable
+fun MessageListItemReceive(hideOwner: Boolean, message: MessageLocal) {
+    Box(
+        modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
+    ) {
+        if (!hideOwner) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_message_sender_bg),
+                contentDescription = "picture",
+                modifier = Modifier
+                    .size(30.dp)
+            )
+        }
+        Column(
+            modifier = Modifier.absolutePadding(40.dp)
+        ) {
+            if (!hideOwner) {
+                Text(
+                    text = message.fromNickname,
+                    fontWeight = FontWeight(300),
+                    fontSize = 14.sp,
+                    lineHeight = 16.sp,
+                    color = Color(0xFF747474),
+                    modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
+                )
+            }
+            Text(text = message.content)
+        }
+    }
+}
+
+@Composable
+fun MessageListItemSent(hideOwner: Boolean, message: MessageLocal) {
+    Box(
+        modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
+    ) {
+        if (!hideOwner) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_list_item_bg),
+                contentDescription = "picture",
+                modifier = Modifier
+                    .size(30.dp)
+            )
+        }
+        Column(
+            modifier = Modifier.absolutePadding(40.dp)
+        ) {
+            if (!hideOwner) {
+                Text(
+                    text = message.fromNickname,
+                    fontWeight = FontWeight(300),
+                    fontSize = 14.sp,
+                    lineHeight = 16.sp,
+                    color = Color(0xFF747474),
+                    modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
+                )
+            }
+            Text(text = message.content)
+        }
+    }
+}
+
+@Composable
+fun MessageListTimeStamp(date: String) {
+    Text(
+        text = date,
+        fontSize = 14.sp,
+        color = Color(0xFF3D3D3D),
+        fontWeight = FontWeight(200),
+        lineHeight = 16.sp,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .absolutePadding(0.dp, 8.dp, 0.dp, 8.dp),
+    )
+}
+
+@Composable
+fun OngeziComposeBottomBar(ongezi: Ongezi, ongeziState: OngeziState, user: UserModel) {
     var message by remember { mutableStateOf("") }
     Surface(
         elevation = 5.dp
@@ -193,7 +303,10 @@ fun OngeziComposeBottomBar() {
                         .fillMaxWidth()
                         .padding(8.dp),
                     maxLines = 4,
-                    singleLine = false
+                    singleLine = false,
+                    textStyle = TextStyle(
+                        fontSize = 16.sp
+                    )
                 )
                 if (message.isBlank()) {
                     Text(
@@ -213,7 +326,10 @@ fun OngeziComposeBottomBar() {
 //                }
                 Spacer(Modifier.weight(1.0f))
                 IconButton(
-                    onClick = { },
+                    onClick = {
+                        sendMessage(ongezi, ongeziState, message, user)
+                        message = ""
+                    },
                     enabled = message.isNotBlank()
                 ) {
                     Icon(Icons.Sharp.Send, contentDescription = "tuma maneno")
@@ -222,6 +338,15 @@ fun OngeziComposeBottomBar() {
         }
     }
 
+}
+
+fun sendMessage(
+    ongezi: Ongezi,
+    ongeziState: OngeziState,
+    message: String,
+    userModel: UserModel
+) {
+    ongeziState.saveMessage(ongezi, message, userModel)
 }
 
 

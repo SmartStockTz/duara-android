@@ -1,6 +1,7 @@
 package com.fahamutech.duara.states
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -18,6 +19,7 @@ class MaongeziState : ViewModel() {
     fun fetMaongezi() {
         viewModelScope.launch {
             val m = getMaongezi()
+            Log.e("JUGGG", m.size.toString())
             _maongezi.value = m
         }
     }

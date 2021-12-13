@@ -10,7 +10,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.database.getStringOrNull
-import com.fahamutech.duara.models.Duara
+import com.fahamutech.duara.models.DuaraRemote
 import com.fahamutech.duara.models.DuaraLocal
 import com.fahamutech.duara.models.DuaraSync
 import com.fahamutech.duara.utils.getHttpClient
@@ -25,7 +25,7 @@ import retrofit2.http.POST
 
 private interface MaduaraFunctions {
     @POST("/maduara/syncs")
-    fun syncs(@Body data: DuaraSync): Call<List<Duara>>
+    fun syncs(@Body data: DuaraSync): Call<List<DuaraRemote>>
 }
 
 private fun educationalDialog(activity: Activity, granted: () -> Unit) {
@@ -154,7 +154,7 @@ suspend fun localMaduara(context: Context): List<DuaraLocal> {
     }
 }
 
-suspend fun syncContacts(context: Context): List<Duara> {
+suspend fun syncContacts(context: Context): List<DuaraRemote> {
     return withContext(Dispatchers.IO) {
         val user = getUser()
         if (user?.pub != null) {

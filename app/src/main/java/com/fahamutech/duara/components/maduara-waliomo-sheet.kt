@@ -1,5 +1,6 @@
 package com.fahamutech.duara.components
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -21,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.fahamutech.duara.R
-import com.fahamutech.duara.models.Duara
+import com.fahamutech.duara.models.DuaraRemote
 import com.fahamutech.duara.models.Ongezi
 import com.fahamutech.duara.services.saveOngezi
 import com.fahamutech.duara.utils.stringFromDate
@@ -31,25 +32,19 @@ import java.util.*
 @ExperimentalFoundationApi
 @ExperimentalMaterialApi
 @Composable
-fun MaduaraWaliomoSheetContent(duaraWaliomo: List<Duara>, navController: NavController) {
-//    val w = (1..50).map {
-//        val a = Duara()
-//        a.nickname = it.toString()
-//        a
-//    }
+fun MaduaraWaliomoSheetContent(duaraRemoteWaliomo: List<DuaraRemote>, navController: NavController) {
     Column(
         modifier = Modifier
             .padding(16.dp)
             .fillMaxWidth(),
     ) {
-//        SearchWaliomoKwenyeDuara()
         WaliomoKwenyeDuaraHeader()
         LazyVerticalGrid(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
             cells = GridCells.Adaptive(minSize = 102.dp),
         ) {
-            items(duaraWaliomo) { duaraLocal ->
-                DuaraMemberItem(duaraLocal, navController)
+            items(duaraRemoteWaliomo) { d ->
+                DuaraMemberItem(d, navController)
             }
         }
     }
@@ -68,11 +63,11 @@ fun WaliomoKwenyeDuaraHeader() {
 }
 
 @Composable
-fun DuaraMemberItem(duaraLocal: Duara, navController: NavController) {
+fun DuaraMemberItem(duaraRemoteLocal: DuaraRemote, navController: NavController) {
     val scope = rememberCoroutineScope()
     Column(
         modifier = Modifier.clickable {
-            scope.launch { startMaongeziNaMtu(duaraLocal, navController) }
+            scope.launch { startMaongeziNaMtu(duaraRemoteLocal, navController) }
         }
     ) {
         Box(
@@ -85,14 +80,14 @@ fun DuaraMemberItem(duaraLocal: Duara, navController: NavController) {
                 modifier = Modifier.size(80.dp)
             )
             Text(
-                text = duaraLocal.nickname[0].toString(),
+                text = duaraRemoteLocal.nickname[0].toString(),
                 fontWeight = FontWeight(500),
                 color = Color.White,
                 fontSize = 24.sp
             )
         }
         Text(
-            text = duaraLocal.nickname,
+            text = duaraRemoteLocal.nickname,
             fontWeight = FontWeight.Normal,
             color = Color(0xFF8E8E8E),
             fontSize = 14.sp,
@@ -102,10 +97,11 @@ fun DuaraMemberItem(duaraLocal: Duara, navController: NavController) {
     }
 }
 
-private suspend fun startMaongeziNaMtu(duaraLocal: Duara, navController: NavController) {
+private suspend fun startMaongeziNaMtu(duaraRemote: DuaraRemote, navController: NavController) {
     val ongezi = Ongezi()
-    ongezi.id = duaraLocal.pub!!.x
-    ongezi.duara = duaraLocal
+    ongezi.id = duaraRemote.pub!!.x
+    ongezi.duara_nickname = duaraRemote.nickname
+    ongezi.duara_pub = duaraRemote.pub
     ongezi.date = stringFromDate(Date())
     saveOngezi(ongezi)
     navController.navigate("ongezi/${ongezi.id}") {

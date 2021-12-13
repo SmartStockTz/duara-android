@@ -30,16 +30,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.fahamutech.duara.R
-import com.fahamutech.duara.models.Duara
+import com.fahamutech.duara.models.DuaraRemote
 import com.fahamutech.duara.models.DuaraLocal
 import com.fahamutech.duara.services.countWaliomoKwenyeDuara
-import com.fahamutech.duara.services.getMaduaraByDuara
+import com.fahamutech.duara.services.getMaduaraByDuaraNumberHash
 import com.fahamutech.duara.states.MaduaraState
 import com.fahamutech.duara.utils.duaraLocalToRemoteHash
 import com.fahamutech.duara.utils.stringToSHA256
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import java.util.*
 
 @Composable
 fun MaduaraTopBar(
@@ -167,7 +165,7 @@ fun HelperMessage() {
 fun MaduaraLocalList(
     grouped: Map<Char, List<DuaraLocal>>,
     maduaraState: MaduaraState,
-    showModalSheet: (List<Duara>) -> Unit
+    showModalSheet: (List<DuaraRemote>) -> Unit
 ) {
     val st = rememberLazyListState()
     LazyColumn(
@@ -192,7 +190,7 @@ fun MaduaraLocalList(
 private fun MaduaraLocalItem(
     i: DuaraLocal,
     maduaraState: MaduaraState,
-    showModalSheet: (List<Duara>) -> Unit
+    showModalSheet: (List<DuaraRemote>) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     var waliomo by remember { mutableStateOf(1) }
@@ -203,17 +201,19 @@ private fun MaduaraLocalItem(
         }
     }
     LaunchedEffect(i.normalizedNumber) {
-        waliomo = countDuaraMembers(i.normalizedNumber)
+        scope.launch {
+            waliomo = countDuaraMembers(i.normalizedNumber)
+        }
     }
 }
 
 private suspend fun showDuaraMembersOrPromo(
     duaraLocal: DuaraLocal,
     maduaraState: MaduaraState,
-    showModalSheet: (List<Duara>) -> Unit
+    showModalSheet: (List<DuaraRemote>) -> Unit
 ) {
     val b = duaraLocalToRemoteHash(duaraLocal.normalizedNumber)
-    val c = getMaduaraByDuara(b)
+    val c = getMaduaraByDuaraNumberHash(b)
     if (c.isEmpty()) {
         maduaraState.toggleShowOneMemberDialog(true)
     } else {

@@ -3,17 +3,15 @@ package com.fahamutech.duara.pages
 import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.fahamutech.duara.components.*
-import com.fahamutech.duara.models.Duara
+import com.fahamutech.duara.models.DuaraRemote
 import com.fahamutech.duara.models.UserModel
 import com.fahamutech.duara.services.getUser
 import com.fahamutech.duara.states.MaduaraState
@@ -28,7 +26,7 @@ fun Maduara(
     navController: NavController,
     context: Context
 ) {
-    var duaraWaliomo by remember { mutableStateOf<List<Duara>>(mutableListOf()) }
+    var duaraWaliomo by remember { mutableStateOf<List<DuaraRemote>>(mutableListOf()) }
     val scope = rememberCoroutineScope()
     var user: UserModel? by remember { mutableStateOf(null) }
     if (user != null) {
@@ -68,7 +66,7 @@ fun MaduaraView(
     bottomState: ModalBottomSheetState,
     scope: CoroutineScope,
     context: Context,
-    onDuaraWaliomo: (List<Duara>) -> Unit
+    onDuaraWaliomo: (List<DuaraRemote>) -> Unit
 ) {
     val localNumbers by maduaraState.maduaraLocalGroupByInitial.observeAsState()
     Scaffold(

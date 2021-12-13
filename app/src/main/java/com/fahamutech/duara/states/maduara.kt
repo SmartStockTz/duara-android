@@ -57,6 +57,7 @@ class MaduaraState : ViewModel() {
         viewModelScope.launch {
             withTryCatch(run = {
                 _sm(context)
+                fetchMaduara(context)
             }) {
                 messageToApp(it, context)
                 _maduaraSyncProgress.value = false

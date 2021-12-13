@@ -24,6 +24,10 @@ import com.fahamutech.duara.states.MaduaraState
 import com.fahamutech.duara.states.MaongeziState
 import com.fahamutech.duara.states.OngeziState
 import com.fahamutech.duara.ui.theme.DuaraTheme
+import com.fahamutech.duara.utils.generateKeyPair
+import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
+import com.nimbusds.jose.jca.JCASupport
+import java.security.Security
 
 class DuaraApp : ComponentActivity() {
 
@@ -71,7 +75,10 @@ fun DuaraApp(
                     arguments = listOf(navArgument("id") { type = NavType.StringType })
                 ) {
                     OngeziPage(
-                        it.arguments?.getString("id"), ongeziState, navController, activity
+                        it.arguments?.getString("id"),
+                        ongeziState,
+                        navController,
+                        activity
                     )
                 }
                 composable("maduara") {

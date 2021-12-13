@@ -51,8 +51,10 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.firebase:firebase-messaging:23.0.0'
+    implementation 'com.google.android.gms:play-services-base:17.6.0'
     def lifecycle_version = "2.4.0"
+    def work_version = "2.7.1"
+    implementation 'com.google.firebase:firebase-messaging:23.0.0'
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.0'
     implementation 'com.google.android.material:material:1.4.0'
@@ -81,6 +83,8 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt
     implementation 'com.nimbusds:nimbus-jose-jwt:9.15.2'
+
+    implementation "androidx.work:work-runtime-ktx:$work_version"
 
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

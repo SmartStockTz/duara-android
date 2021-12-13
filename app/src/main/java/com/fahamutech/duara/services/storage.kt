@@ -13,7 +13,7 @@ fun initLocalDatabase(context: Context) {
     Realm.init(context)
 }
 
-private fun getRealm(): Realm {
+fun getRealm(): Realm {
     val configuration = RealmConfiguration.Builder().name("duara.realm")
         .deleteRealmIfMigrationNeeded()
         .build()
@@ -63,12 +63,12 @@ suspend fun getMaduaraByDuaraNumberHash(duaraHash: String): List<DuaraRemote> {
 
 suspend fun getDuaraByPubX(x: String): DuaraRemote? {
     return withContext(Dispatchers.IO) {
-        val a =  getRealm().where(DuaraRemote::class.java)
+        val a = getRealm().where(DuaraRemote::class.java)
             .equalTo("pub.x", x)
             .findFirst()
-        return@withContext if(a!=null){
+        return@withContext if (a != null) {
             getRealm().copyFromRealm(a)
-        }else{
+        } else {
             a
         }
     }
@@ -187,10 +187,33 @@ suspend fun getLastMessageInOngezi(ongeziId: String): String {
 }
 
 
-suspend fun getMessagesWaitToBeSent() {
-    withContext(Dispatchers.IO) {
-        getRealm().where(MessageLocalOutBox::class.java)
+suspend fun getMessagesWaitToBeSent(): List<MessageLocalOutBox> {
+    return withContext(Dispatchers.IO) {
+        val a = getRealm().where(MessageLocalOutBox::class.java)
             .findAll()
+        return@withContext if (a != null) {
+            getRealm().copyFromRealm(a)
+        } else {
+            mutableListOf()
+        }
+    }
+}
+
+suspend fun getMessageWaitToBeSent(messageId: String): MessageLocalOutBox? {
+    return withContext(Dispatchers.IO) {
+        return@withContext getRealm().where(MessageLocalOutBox::class.java)
+            .equalTo("id", messageId)
+            .findFirst()
+    }
+}
+
+suspend fun deleteMessageInWaitToBeSent(messageId: String) {
+    withContext(Dispatchers.IO) {
+        getRealm().executeTransaction {
+            it.where(MessageLocalOutBox::class.java)
+                .equalTo("id", messageId)
+                .findFirst()?.deleteFromRealm()
+        }
     }
 }
 

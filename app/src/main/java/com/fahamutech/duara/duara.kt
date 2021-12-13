@@ -25,6 +25,8 @@ import com.fahamutech.duara.states.MaongeziState
 import com.fahamutech.duara.states.OngeziState
 import com.fahamutech.duara.ui.theme.DuaraTheme
 import com.fahamutech.duara.utils.generateKeyPair
+import com.fahamutech.duara.workers.startPeriodicalSendMessageWorker
+import com.google.android.gms.common.GoogleApiAvailability
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jose.jca.JCASupport
 import java.security.Security
@@ -35,6 +37,8 @@ class DuaraApp : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initLocalDatabase(this)
+        startPeriodicalSendMessageWorker(this)
+        GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(this)
         val jiungeState by viewModels<JiungeState>()
         val maongeziState by viewModels<MaongeziState>()
         val maduaraState by viewModels<MaduaraState>()

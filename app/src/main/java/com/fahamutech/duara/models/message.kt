@@ -15,12 +15,20 @@ enum class MessageStatus {
     UNREAD
 }
 
-open class MessageRemote {
-    // duara_id
-    var to: String = ""
-    var pub: PubModel? = null
+class MessageRemote(
+    var to: String,
+    var from: PubModel,
     // encrypted_message(#MessageLocal)
-    var message: String = ""
+    var message: String
+)
+
+class MessageRemoteResponse {
+    var cid: String = ""
+    var multicast_id: String? = null
+    var success: String? = null
+    var failure: String? = null
+    var canonical_ids: String? = null
+    var results: List<MutableMap<String, Any>> = mutableListOf()
 }
 
 open class MessageLocal(
@@ -36,7 +44,7 @@ open class MessageLocal(
     var status: String = MessageStatus.READ.toString()
 ) : RealmObject()
 
-open class MessageLocalSignature {
+open class MessageLocalSignature: RealmObject() {
     var date: String = stringFromDate(Date())
     @PrimaryKey
     var cid: String? = ""
@@ -46,9 +54,13 @@ open class MessageLocalOutBox : RealmObject() {
     // remote_duara_hash
     var to: String = UUID.randomUUID().toString() // duara_id
     var from: PubModel? = null
+
     // encrypted_message(#MessageLocal)
     var message: String = ""
     var date: String = stringFromDate(Date())
+
+    @PrimaryKey
+    var id: String = UUID.randomUUID().toString()
 }
 
 

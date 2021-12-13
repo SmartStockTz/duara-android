@@ -1,5 +1,6 @@
 package com.fahamutech.duara.states
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -17,6 +18,7 @@ import com.fahamutech.duara.services.updateOngeziLastSeen
 import com.fahamutech.duara.utils.messageToApp
 import com.fahamutech.duara.utils.stringFromDate
 import com.fahamutech.duara.utils.withTryCatch
+import com.fahamutech.duara.workers.startSendMessageWorker
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -34,14 +36,13 @@ class OngeziState : ViewModel() {
         }
     }
 
-    fun saveMessage(ongezi: Ongezi, message: String, userModel: UserModel) {
+    fun saveMessage(ongezi: Ongezi, message: String, userModel: UserModel, context: Context) {
         viewModelScope.launch {
-            val duara = getDuaraByPubX(ongezi.duara_pub!!.x)
             val messageLocal = MessageLocal(
                 date = stringFromDate(Date()),
                 content = message,
-                duara_id = duara!!.id,
-                duara_pub = duara.pub,
+                duara_id = ongezi.duara_id,
+                duara_pub = ongezi.duara_pub,
                 from = userModel.pub,
                 fromNickname = userModel.nickname
             )
@@ -50,6 +51,7 @@ class OngeziState : ViewModel() {
             val messages = getOngeziMessagesInStore(ongezi.id)
 //            Log.e("*******", messages.size.toString())
             _messages.value = messages
+            startSendMessageWorker(context)
         }
     }
 

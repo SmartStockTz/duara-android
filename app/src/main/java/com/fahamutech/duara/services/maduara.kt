@@ -10,8 +10,8 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.database.getStringOrNull
-import com.fahamutech.duara.models.DuaraRemote
 import com.fahamutech.duara.models.DuaraLocal
+import com.fahamutech.duara.models.DuaraRemote
 import com.fahamutech.duara.models.DuaraSync
 import com.fahamutech.duara.utils.getHttpClient
 import com.fahamutech.duara.utils.messageToApp

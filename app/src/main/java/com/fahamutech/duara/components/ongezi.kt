@@ -129,7 +129,8 @@ private fun OngeziTopBarSearch(
 fun OngeziBody(
     ongeziState: OngeziState,
     ongezi: Ongezi,
-    user: UserModel
+    user: UserModel,
+    context: Context
 ) {
     val messages by ongeziState.messages.observeAsState()
     val nestedScrollConnection = remember {
@@ -145,7 +146,7 @@ fun OngeziBody(
             modifier = Modifier.weight(1f),
             user = user
         )
-        OngeziComposeBottomBar(ongezi, ongeziState, user)
+        OngeziComposeBottomBar(ongezi, ongeziState, user, context)
     }
     DisposableEffect(ongezi.id) {
         ongeziState.fetchMessage(ongezi.id)
@@ -277,7 +278,10 @@ fun MessageListTimeStamp(date: String) {
 }
 
 @Composable
-fun OngeziComposeBottomBar(ongezi: Ongezi, ongeziState: OngeziState, user: UserModel) {
+fun OngeziComposeBottomBar(
+    ongezi: Ongezi, ongeziState: OngeziState, user: UserModel,
+    context: Context
+) {
     var message by remember { mutableStateOf("") }
     Surface(
         elevation = 5.dp
@@ -327,7 +331,7 @@ fun OngeziComposeBottomBar(ongezi: Ongezi, ongeziState: OngeziState, user: UserM
                 Spacer(Modifier.weight(1.0f))
                 IconButton(
                     onClick = {
-                        sendMessage(ongezi, ongeziState, message, user)
+                        sendMessage(ongezi, ongeziState, message, user, context)
                         message = ""
                     },
                     enabled = message.isNotBlank()
@@ -341,12 +345,10 @@ fun OngeziComposeBottomBar(ongezi: Ongezi, ongeziState: OngeziState, user: UserM
 }
 
 fun sendMessage(
-    ongezi: Ongezi,
-    ongeziState: OngeziState,
-    message: String,
-    userModel: UserModel
+    ongezi: Ongezi, ongeziState: OngeziState, message: String,
+    userModel: UserModel, context: Context
 ) {
-    ongeziState.saveMessage(ongezi, message, userModel)
+    ongeziState.saveMessage(ongezi, message, userModel, context)
 }
 
 

@@ -26,11 +26,13 @@ import java.util.concurrent.TimeUnit
 import javax.crypto.Cipher
 import javax.crypto.KeyAgreement
 import javax.crypto.SecretKey
+import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 const val baseUrl = "https://maduara-faas.bfast.fahamutech.com"
+const val baseUrlIpfs = "https://ipfs.bfast.fahamutech.com"
 
-fun <T> getHttpClient(clazz: Class<T>): T {
+fun <T> getHttpClient(clazz: Class<T>, base: String = baseUrl): T {
     val okHttClient = OkHttpClient.Builder()
         .connectTimeout(5, TimeUnit.MINUTES)
         .readTimeout(5, TimeUnit.MINUTES)
@@ -39,7 +41,7 @@ fun <T> getHttpClient(clazz: Class<T>): T {
     val retrofit = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
         .client(okHttClient)
-        .baseUrl(baseUrl)
+        .baseUrl(base)
         .build()
     return retrofit.create(clazz)
 }
@@ -149,14 +151,25 @@ suspend fun generatePrivKey(privModel: PrivModel): PrivateKey {
     }
 }
 
-suspend fun generateSharedKey(pubModel: PubModel): SecretKey {
+suspend fun <T> generateSharedKey(
+    pubModel: PubModel,
+    onDone: (secretKey: SecretKey, iv: IvParameterSpec) -> T
+): T {
     return withContext(Dispatchers.IO) {
         val user = getUser()
         val ka: KeyAgreement = KeyAgreement.getInstance("ECDH")
         ka.init(generatePrivKey(user?.priv!!))
         ka.doPhase(generatePubKey(pubModel), true)
         val sharedKey = ka.generateSecret()
-        return@withContext SecretKeySpec(sharedKey, 0, sharedKey.size, "AES")
+        val messageDigest = MessageDigest.getInstance("SHA-256")
+        messageDigest.update(sharedKey)
+        val digest = messageDigest.digest()
+        val digestLength = digest.size
+        val iv = Arrays.copyOfRange(digest, 0, (digestLength + 1) / 2)
+        val ivSpec = IvParameterSpec(iv)
+        val sessionKey = Arrays.copyOfRange(digest, (digestLength + 1) / 2, digestLength)
+        val secretKey: SecretKey = SecretKeySpec(sessionKey, 0, sessionKey.size, "AES")
+        return@withContext onDone(secretKey, ivSpec)
     }
 }
 
@@ -164,34 +177,30 @@ suspend fun encryptMessage(messageLocal: MessageLocal): MessageLocalOutBox {
     return withContext(Dispatchers.IO) {
         val messageByte = Gson().toJson(messageLocal, MessageLocal::class.java)
             .toByteArray(StandardCharsets.UTF_8)
-        val sharedKey = generateSharedKey(messageLocal.duara_pub!!)
-
-        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        cipher.init(Cipher.ENCRYPT_MODE, sharedKey)
-        val encByte = cipher.doFinal(messageByte)
-
-        val enc = Base64.encodeToString(encByte, Base64.DEFAULT)
-        val messageOut = MessageLocalOutBox()
-        messageOut.to = messageLocal.duara_id!!
-        messageOut.from = messageLocal.from
-        messageOut.message = enc
-        return@withContext messageOut
+        return@withContext generateSharedKey(messageLocal.duara_pub!!) { secretKey, iv ->
+            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv)
+            val encByte = cipher.doFinal(messageByte)
+            val enc = Base64.encodeToString(encByte, Base64.DEFAULT)
+            val messageOut = MessageLocalOutBox()
+            messageOut.to = messageLocal.duara_id!!
+            messageOut.from = messageLocal.from
+            messageOut.message = enc
+            return@generateSharedKey messageOut
+        }
     }
 }
 
 suspend fun decryptMessage(messageRemote: MessageRemote): MessageLocal {
     return withContext(Dispatchers.IO) {
-        val sharedKey = generateSharedKey(messageRemote.pub!!)
-
-        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        cipher.init(Cipher.DECRYPT_MODE, sharedKey)
-//        val decByte = cipher.doFinal(messageRemote.message).toString()
-//        val deString = Base64.encodeToString(decByte, Base64.DEFAULT)
-
-        val decryptMeBytes: ByteArray = Base64.decode(messageRemote.message, Base64.DEFAULT)
-        val textBytes = cipher.doFinal(decryptMeBytes)
-        val originalText = String(textBytes)
-        return@withContext Gson().fromJson(originalText,MessageLocal::class.java)
+        generateSharedKey(messageRemote.from) { secretKey, iv ->
+            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, iv)
+            val decryptMeBytes: ByteArray = Base64.decode(messageRemote.message, Base64.DEFAULT)
+            val textBytes = cipher.doFinal(decryptMeBytes)
+            val originalText = String(textBytes)
+            return@generateSharedKey Gson().fromJson(originalText, MessageLocal::class.java)
+        }
     }
 }
 

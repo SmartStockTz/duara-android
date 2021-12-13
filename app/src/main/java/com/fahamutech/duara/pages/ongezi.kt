@@ -28,7 +28,7 @@ fun OngeziPage(
         Scaffold(
             topBar = { OngeziTopBar(ongezi!!, ongeziState, context, navController) },
             content = {
-                OngeziBody(ongeziState, ongezi!!, user!!)
+                OngeziBody(ongeziState, ongezi!!, user!!, context)
             }
         )
     }

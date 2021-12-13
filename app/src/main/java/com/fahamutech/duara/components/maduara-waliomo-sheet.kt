@@ -102,7 +102,7 @@ private suspend fun startMaongeziNaMtu(duaraRemote: DuaraRemote, navController: 
     ongezi.id = duaraRemote.pub!!.x
     ongezi.duara_nickname = duaraRemote.nickname
     ongezi.duara_pub = duaraRemote.pub
-    ongezi.date = stringFromDate(Date())
+    ongezi.duara_id = duaraRemote.id
     saveOngezi(ongezi)
     navController.navigate("ongezi/${ongezi.id}") {
         popUpTo("maongezi")

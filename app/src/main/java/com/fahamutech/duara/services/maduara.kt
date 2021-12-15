@@ -154,13 +154,14 @@ suspend fun localMaduara(context: Context): List<DuaraLocal> {
     }
 }
 
-suspend fun syncContacts(context: Context): List<DuaraRemote> {
+suspend fun syncContacts(context: Context): MutableList<DuaraRemote> {
     return withContext(Dispatchers.IO) {
-        val user = getUser()
-        if (user?.pub != null) {
+        val storage = DuaraStorage.getInstance(context)
+        val user = storage.user().getUser()
+        return@withContext if (user?.pub != null) {
             val contacts = normalisedNumberSignatures(context)
             val syncSendModel = DuaraSync()
-            syncSendModel.maduara = contacts //.subList(0,100)
+            syncSendModel.maduara = contacts
             syncSendModel.token = user.token
             syncSendModel.nickname = user.nickname
             syncSendModel.picture = user.picture
@@ -168,12 +169,9 @@ suspend fun syncContacts(context: Context): List<DuaraRemote> {
             syncSendModel.device = getDeviceId(context.contentResolver)
             val maduara =
                 getHttpClient(MaduaraFunctions::class.java).syncs(syncSendModel).await()
-            saveMaduara(maduara)
-            return@withContext mutableListOf()
-        } else {
-//            throw Throwable(message = "Tumeshindwa jua taarifa zako")
-            mutableListOf()
-        }
+            storage.maduara().saveMaduara(maduara)
+            maduara.toMutableList()
+        } else mutableListOf()
     }
 }
 

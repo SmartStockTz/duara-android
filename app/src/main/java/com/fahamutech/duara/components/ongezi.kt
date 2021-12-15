@@ -1,6 +1,7 @@
 package com.fahamutech.duara.components
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -39,13 +40,13 @@ import java.util.*
 
 @Composable
 fun OngeziTopBar(
-    ongezi: Ongezi, ongeziState: OngeziState,
+    maongezi: Maongezi, ongeziState: OngeziState,
     context: Context, navController: NavController
 ) {
     var inSearchMode by remember { mutableStateOf(false) }
     Box {
         if (!inSearchMode) {
-            OngeziTopBarNormal(ongezi, navController) {
+            OngeziTopBarNormal(maongezi, navController) {
                 inSearchMode = true
             }
         } else {
@@ -58,7 +59,7 @@ fun OngeziTopBar(
 
 @Composable
 private fun OngeziTopBarNormal(
-    ongezi: Ongezi,
+    maongezi: Maongezi,
     navController: NavController, onSearchClick: () -> Unit
 ) {
     TopAppBar {
@@ -68,7 +69,7 @@ private fun OngeziTopBarNormal(
             Icon(Icons.Sharp.ArrowBack, "back")
         }
         Text(
-            text = ongezi.duara_nickname,
+            text = maongezi.receiver_nickname,
             fontSize = 24.sp,
             fontWeight = FontWeight(500),
             lineHeight = 36.sp,
@@ -128,11 +129,11 @@ private fun OngeziTopBarSearch(
 @Composable
 fun OngeziBody(
     ongeziState: OngeziState,
-    ongezi: Ongezi,
+    maongezi: Maongezi,
     user: UserModel,
     context: Context
 ) {
-    val messages by ongeziState.messages.observeAsState()
+    val messages by ongeziState.messages.observeAsState(initial = mutableListOf())
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {}
     }
@@ -142,14 +143,14 @@ fun OngeziBody(
             .nestedScroll(nestedScrollConnection)
     ) {
         OngeziMessageList(
-            messages = messages!!,
+            messages = messages,
             modifier = Modifier.weight(1f),
             user = user
         )
-        OngeziComposeBottomBar(ongezi, ongeziState, user, context)
+        OngeziComposeBottomBar(maongezi, ongeziState, user, context)
     }
-    DisposableEffect(ongezi.id) {
-        ongeziState.fetchMessage(ongezi.id)
+    DisposableEffect(maongezi.id) {
+        ongeziState.fetchMessage(maongezi.id, context)
         onDispose {
             ongeziState.resetMessages()
         }
@@ -157,7 +158,8 @@ fun OngeziBody(
 }
 
 @Composable
-fun OngeziMessageList(messages: MutableList<MessageLocal>, user: UserModel, modifier: Modifier) {
+fun OngeziMessageList(messages: List<Message>, user: UserModel, modifier: Modifier) {
+    Log.e("***WOWOWMM", messages.size.toString())
     val state = rememberLazyListState()
     LazyColumn(
         modifier = modifier,
@@ -166,13 +168,13 @@ fun OngeziMessageList(messages: MutableList<MessageLocal>, user: UserModel, modi
         reverseLayout = true
     ) {
         messageByTime(messages).forEach { (date, m) ->
-            messageInTimeGroupByOwner(m).forEach { (own, msg) ->
+            messageInTimeGroupByOwner(m).forEach { (_, msg) ->
                 items(msg) { message ->
                     val hO = msg.indexOf(message) != msg.size - 1
-                    if (user.pub!!.x != message.from!!.x) {
+                    if (user.pub!!.x != message.sender_pubkey!!.x) {
                         MessageListItemReceive(hO, message)
                     }
-                    if (user.pub!!.x == message.from!!.x) {
+                    if (user.pub!!.x == message.sender_pubkey!!.x) {
                         MessageListItemSent(hO, message)
                     }
                 }
@@ -185,14 +187,14 @@ fun OngeziMessageList(messages: MutableList<MessageLocal>, user: UserModel, modi
 }
 
 fun messageInTimeGroupByOwner(
-    messageList: List<MessageLocal>
-): MutableMap<String, List<MessageLocal>> {
+    messageList: List<Message>
+): MutableMap<String, List<Message>> {
     return messageList.groupBy { m ->
-        m.fromNickname
+        m.sender_nickname
     }.toMutableMap()
 }
 
-fun messageByTime(messages: MutableList<MessageLocal>): MutableMap<String, List<MessageLocal>> {
+fun messageByTime(messages: List<Message>): MutableMap<String, List<Message>> {
     return messages.groupBy {
         val a = it.date.split(":").toMutableList()
         a.removeLastOrNull()
@@ -201,7 +203,7 @@ fun messageByTime(messages: MutableList<MessageLocal>): MutableMap<String, List<
 }
 
 @Composable
-fun MessageListItemReceive(hideOwner: Boolean, message: MessageLocal) {
+fun MessageListItemReceive(hideOwner: Boolean, message: Message) {
     Box(
         modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
     ) {
@@ -218,7 +220,7 @@ fun MessageListItemReceive(hideOwner: Boolean, message: MessageLocal) {
         ) {
             if (!hideOwner) {
                 Text(
-                    text = message.fromNickname,
+                    text = message.sender_nickname,
                     fontWeight = FontWeight(300),
                     fontSize = 14.sp,
                     lineHeight = 16.sp,
@@ -232,7 +234,7 @@ fun MessageListItemReceive(hideOwner: Boolean, message: MessageLocal) {
 }
 
 @Composable
-fun MessageListItemSent(hideOwner: Boolean, message: MessageLocal) {
+fun MessageListItemSent(hideOwner: Boolean, message: Message) {
     Box(
         modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
     ) {
@@ -249,7 +251,7 @@ fun MessageListItemSent(hideOwner: Boolean, message: MessageLocal) {
         ) {
             if (!hideOwner) {
                 Text(
-                    text = message.fromNickname,
+                    text = message.sender_nickname,
                     fontWeight = FontWeight(300),
                     fontSize = 14.sp,
                     lineHeight = 16.sp,
@@ -279,8 +281,8 @@ fun MessageListTimeStamp(date: String) {
 
 @Composable
 fun OngeziComposeBottomBar(
-    ongezi: Ongezi, ongeziState: OngeziState, user: UserModel,
-    context: Context
+    maongezi: Maongezi, ongeziState: OngeziState, user: UserModel,
+    context: Context,
 ) {
     var message by remember { mutableStateOf("") }
     Surface(
@@ -289,7 +291,6 @@ fun OngeziComposeBottomBar(
         Column(
             modifier = Modifier
                 .absolutePadding(16.dp, 8.dp, 16.dp, 8.dp)
-//            .requiredHeightIn(Dp.Unspecified, 181.dp)
         ) {
             Box(
                 modifier = Modifier
@@ -331,7 +332,7 @@ fun OngeziComposeBottomBar(
                 Spacer(Modifier.weight(1.0f))
                 IconButton(
                     onClick = {
-                        sendMessage(ongezi, ongeziState, message, user, context)
+                        sendMessage(maongezi, ongeziState, message, user, context)
                         message = ""
                     },
                     enabled = message.isNotBlank()
@@ -345,10 +346,21 @@ fun OngeziComposeBottomBar(
 }
 
 fun sendMessage(
-    ongezi: Ongezi, ongeziState: OngeziState, message: String,
+    maongezi: Maongezi, ongeziState: OngeziState, message: String,
     userModel: UserModel, context: Context
 ) {
-    ongeziState.saveMessage(ongezi, message, userModel, context)
+//    val date = stringFromDate(Date())
+//    val messageLocal = Message(
+//        date = date,
+//        content = message,
+//        duara_id = maongezi.receiver_duara_id,
+//        receiver_pubkey = maongezi.receiver_pubkey,
+//        sender_pubkey = userModel.pub,
+//        sender_nickname = userModel.nickname,
+//        receiver_nickname = maongezi.receiver_nickname,
+//        maongezi_id = maongezi.id
+//    )
+    ongeziState.saveMessage(maongezi, message, userModel, context)
 }
 
 

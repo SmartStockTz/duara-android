@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.fahamutech.duara.R
-import com.fahamutech.duara.models.Ongezi
-import com.fahamutech.duara.services.getLastMessageInOngezi
+import com.fahamutech.duara.models.Maongezi
+import com.fahamutech.duara.services.DuaraStorage
 import com.fahamutech.duara.states.MaongeziState
 import com.fahamutech.duara.ui.theme.DuaraGreen
 import com.fahamutech.duara.utils.timeAgo
@@ -58,7 +58,7 @@ fun MaongeziMapyaFAB(navController: NavController) {
 @ExperimentalFoundationApi
 @Composable
 fun ListYaMaongeziYote(
-    maongezi: List<Ongezi>, maongeziState: MaongeziState, navController: NavController,
+    maongezi: List<Maongezi>, maongeziState: MaongeziState, navController: NavController,
     context: Context
 ) {
     val st = rememberLazyListState()
@@ -77,7 +77,7 @@ fun ListYaMaongeziYote(
 @ExperimentalFoundationApi
 @Composable
 private fun OngeziItem(
-    ongezi: Ongezi,
+    maongezi: Maongezi,
     maongeziState: MaongeziState,
     navController: NavController,
     context: Context
@@ -91,7 +91,7 @@ private fun OngeziItem(
             .absolutePadding(0.dp)
             .combinedClickable(
                 onClick = {
-                    navController.navigate("ongezi/${ongezi.id}") {
+                    navController.navigate("ongezi/${maongezi.id}") {
                         launchSingleTop = true
                     }
                 },
@@ -100,18 +100,18 @@ private fun OngeziItem(
                 }
             ),
     ) {
-        OngeziItemPicture(ongezi)
+        OngeziItemPicture(maongezi)
         Column(
             modifier = Modifier.absolutePadding(6.dp, 8.dp, 16.dp, 8.dp),
         ) {
-            OngeziItemNameAndTime(ongezi)
+            OngeziItemNameAndTime(maongezi)
             OngeziItemLastMessage(message)
         }
     }
     ShowDeleteConversationDialog(showDeleteDialog) {
         when (it) {
             "n" -> {
-                maongeziState.futaOngezi(ongezi, context)
+                maongeziState.futaOngezi(maongezi, context)
                 showDeleteDialog = false
             }
             "h" -> {
@@ -122,9 +122,10 @@ private fun OngeziItem(
             }
         }
     }
-    LaunchedEffect(ongezi.id){
+    LaunchedEffect(maongezi.id) {
         scope.launch {
-            message = getLastMessageInOngezi(ongezi.id)
+            val storage = DuaraStorage.getInstance(context)
+            message = storage.message().maongeziLastMessage(maongezi.id)?.content ?: ""
         }
     }
 }
@@ -162,21 +163,21 @@ private fun OngeziItemLastMessage(message: String) {
         color = Color(0xFF747272),
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
-        modifier = Modifier.absolutePadding(0.dp,0.dp,48.dp,0.dp)
+        modifier = Modifier.absolutePadding(0.dp, 0.dp, 48.dp, 0.dp)
     )
 }
 
 @Composable
-private fun OngeziItemNameAndTime(ongezi: Ongezi) {
+private fun OngeziItemNameAndTime(maongezi: Maongezi) {
     Row {
         Text(
-            text = ongezi.duara_nickname,
+            text = maongezi.receiver_nickname,
             fontWeight = FontWeight(500),
             fontSize = 16.sp
         )
         Spacer(modifier = Modifier.weight(1.0f))
         Text(
-            text = timeAgo(ongezi.date),
+            text = timeAgo(maongezi.date),
             color = Color(0xFF747272),
             fontWeight = FontWeight(400),
             fontSize = 14.sp,
@@ -186,7 +187,7 @@ private fun OngeziItemNameAndTime(ongezi: Ongezi) {
 }
 
 @Composable
-private fun OngeziItemPicture(ongezi: Ongezi) {
+private fun OngeziItemPicture(maongezi: Maongezi) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier.absolutePadding(16.dp, 8.dp, 0.dp, 8.dp)
@@ -197,14 +198,13 @@ private fun OngeziItemPicture(ongezi: Ongezi) {
             modifier = Modifier.size(44.dp)
         )
         Text(
-            text = ongezi.duara_nickname[0].toString(),
+            text = maongezi.receiver_nickname[0].toString(),
             fontWeight = FontWeight(400),
             color = Color.White,
             fontSize = 16.sp
         )
     }
 }
-
 
 
 @Composable

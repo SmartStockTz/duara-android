@@ -3,11 +3,9 @@ package com.fahamutech.duara.workers
 import android.content.Context
 import android.util.Log
 import androidx.work.*
-import com.fahamutech.duara.models.MessageLocalOutBox
+import com.fahamutech.duara.models.MessageOutBox
 import com.fahamutech.duara.models.MessageRemote
-import com.fahamutech.duara.services.deleteMessageInWaitToBeSent
-import com.fahamutech.duara.services.getMessagesWaitToBeSent
-import com.fahamutech.duara.services.initLocalDatabase
+import com.fahamutech.duara.services.DuaraStorage
 import com.fahamutech.duara.services.sendMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -16,12 +14,12 @@ import java.util.concurrent.TimeUnit
 class SendMessagesWorker(context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        initLocalDatabase(applicationContext)
+        val storage = DuaraStorage.getInstance(applicationContext)
         return@withContext try {
             if (runAttemptCount > 20) {
                 return@withContext Result.failure()
             }
-            val messages: List<MessageLocalOutBox> = getMessagesWaitToBeSent()
+            val messages: List<MessageOutBox> = storage.messageOutbox().all()
             Log.e("START SENDING...", messages.size.toString())
             if (messages.toMutableList().isEmpty()) {
                 Log.e("MESSAGE SENT", "0")
@@ -30,19 +28,17 @@ class SendMessagesWorker(context: Context, workerParameters: WorkerParameters) :
             val messagesRemote = messages.map {
                 MessageRemote(
                     message = it.message,
-                    from = it.from!!,
-                    to = it.to
+                    sender_pubkey = it.sender_pubkey!!,
+                    receiver_pubkey = it.receiver_pubkey!!
                 )
             }
             val response = sendMessage(messagesRemote)
-            Log.e("MESSAGE SENT", response.map { it.cid }.toString())
+            val cids = response.map { it.cid }
+            Log.e("MESSAGE SENT", cids.toString())
             messages.forEach {
-                deleteMessageInWaitToBeSent(it.id)
+                storage.messageOutbox().deleteById(it.id)
             }
-            val outputData = workDataOf(
-                "message_cids" to response.map { it.cid }.joinToString(",")
-            )
-            Result.success(outputData)
+            Result.success()
         } catch (e: Exception) {
             Log.e("MESSAGE SENT ERROR", e.toString())
             Result.retry()

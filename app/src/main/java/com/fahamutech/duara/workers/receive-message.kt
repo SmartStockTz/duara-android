@@ -22,32 +22,33 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.DEFAULT_ALL
 import androidx.core.app.NotificationCompat.PRIORITY_MAX
+import androidx.room.withTransaction
 import androidx.work.*
 import com.fahamutech.duara.DuaraApp
 import com.fahamutech.duara.R
 import com.fahamutech.duara.models.*
 import com.fahamutech.duara.services.*
 import com.fahamutech.duara.utils.decryptMessage
+import com.fahamutech.duara.utils.stringFromDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
 class ReceiveMessagesWorker(context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        initLocalDatabase(applicationContext)
+        val storage = DuaraStorage.getInstance(applicationContext)
         return@withContext try {
             if (runAttemptCount > 20) {
                 return@withContext Result.failure()
             }
             val cid = inputData.getString("cid")
-            val messageLocalSignature = MessageLocalSignature()
-            messageLocalSignature.cid = cid!!
-            getRealm().executeTransaction {
-                it.insertOrUpdate(messageLocalSignature)
-            }
-//            Log.e("SAVE SMS CID", cid)
+            val messageCid = MessageCID(
+                cid = cid!!
+            )
+            storage.messageCid().save(messageCid)
             val outputData = workDataOf("cid" to cid)
             Result.success(outputData)
         } catch (e: Exception) {
@@ -60,52 +61,63 @@ class ReceiveMessagesWorker(context: Context, workerParameters: WorkerParameters
 class RetrieveMessagesWorker(context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        initLocalDatabase(applicationContext)
+        val storage = DuaraStorage.getInstance(applicationContext)
         return@withContext try {
             if (runAttemptCount > 20) {
-                return@withContext Result.failure()
-            }
-            var messagesSign = mutableListOf<MessageLocalSignature>()
-            val a = getRealm().where(MessageLocalSignature::class.java).findAll()
-            if (a != null) {
-                messagesSign = getRealm().copyFromRealm(a)
-            }
-            if (messagesSign.isNotEmpty()) {
-                messagesSign.forEach {
-                    try {
-                        val mr = retrieveMessage(it.cid ?: "")
-                        val m = decryptMessage(mr)
-                        m.status = MessageStatus.UNREAD.toString()
-                        getRealm().executeTransaction { realm ->
-                            val ongezi = realm.where(Ongezi::class.java)
-                                .equalTo("id", m.duara_pub?.x)
-                                .findFirst()
-                            if (ongezi == null) {
-                                val d = Ongezi()
-                                d.duara_nickname = m.fromNickname
-                                d.duara_pub = m.duara_pub
-                                d.duara_id = m.duara_id
-                                d.id = m.duara_pub!!.x
-                                realm.insertOrUpdate(d)
-                            }
-                            m.duara_id = m.duara_pub!!.x
-                            realm.insertOrUpdate(m)
-                            realm.where(MessageLocalSignature::class.java)
-                                .equalTo("cid", it.cid)
-                                .findAll()?.deleteAllFromRealm()
-                        }
-                        sendNotification(applicationContext, m)
-                    } catch (e: java.lang.Exception) {
-                        Log.e("****", e.toString())
+                Result.failure()
+            } else {
+                val messagesSign = storage.messageCid().all()
+                if (messagesSign.isNotEmpty()) {
+                    messagesSign.forEach {
+                        handleNewMessage(it, storage, applicationContext)
                     }
                 }
                 Result.success()
             }
-            Result.success()
         } catch (e: Exception) {
             Log.e("RETRIEVE CID ERROR", e.toString())
             Result.retry()
         }
+    }
+}
+
+private suspend fun handleNewMessage(
+    message: MessageCID, storage: DuaraDatabase, context: Context
+) {
+    try {
+        val messageFromCID = retrieveMessage(message.cid ?: "")
+        val messageDecrypted = decryptMessage(messageFromCID, context)
+        if (messageDecrypted === null) {
+            return
+        }
+        val mid = messageDecrypted.sender_pubkey!!.x
+        messageDecrypted.status = MessageStatus.UNREAD.toString()
+        messageDecrypted.date = stringFromDate(Date())
+        messageDecrypted.maongezi_id = mid
+
+        val ongezi = storage.maongezi().getOngeziInStore(mid)
+        if (ongezi == null) {
+            val maongezi = Maongezi(
+                id = mid,
+                receiver_duara_id = messageDecrypted.duara_id,
+                receiver_nickname = messageDecrypted.sender_nickname,
+                receiver_pubkey = messageDecrypted.sender_pubkey
+            )
+            storage.withTransaction {
+                storage.maongezi().saveOngezi(maongezi)
+                storage.message().save(messageDecrypted)
+                storage.messageCid().delete(message.cid)
+            }
+        } else {
+            storage.withTransaction {
+                storage.message().save(messageDecrypted)
+                storage.messageCid().delete(message.cid?:"")
+            }
+        }
+        sendNotification(context, messageDecrypted)
+    } catch (e: Throwable) {
+        Log.e("Handle message", e.toString())
+        throw e
     }
 }
 
@@ -163,16 +175,17 @@ fun startPeriodicalRetrieveMessageWorker(context: Context) {
 }
 
 
-private fun sendNotification(context: Context, messageLocal: MessageLocal) {
+private fun sendNotification(context: Context, message: Message) {
     val id = Math.random().roundToInt()
     val intent = Intent(context, DuaraApp::class.java)
     intent.flags = FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK
-    intent.putExtra(messageLocal.duara_id, messageLocal.id)
-    val NOTIFICATION_CHANNEL = messageLocal.duara_id!!
+    intent.putExtra(message.duara_id, message.id)
+    intent.putExtra("url", "ongezi/${message.maongezi_id}")
+    val NOTIFICATION_CHANNEL = message.duara_id!!
     val notificationManager =
         context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-    val titleNotification = messageLocal.fromNickname
-    val subtitleNotification = messageLocal.content
+    val titleNotification = message.sender_nickname
+    val subtitleNotification = message.content
     val pendingIntent = if (SDK_INT >= Build.VERSION_CODES.M) {
         getActivity(
             context,
@@ -198,7 +211,7 @@ private fun sendNotification(context: Context, messageLocal: MessageLocal) {
         val ringtoneManager = getDefaultUri(TYPE_NOTIFICATION)
         val audioAttributes = AudioAttributes.Builder().setUsage(USAGE_NOTIFICATION_RINGTONE)
             .setContentType(CONTENT_TYPE_SONIFICATION).build()
-        val NOTIFICATION_NAME = messageLocal.fromNickname
+        val NOTIFICATION_NAME = message.sender_nickname
         val channel = NotificationChannel(
             NOTIFICATION_CHANNEL,
             NOTIFICATION_NAME,

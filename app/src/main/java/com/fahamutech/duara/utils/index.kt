@@ -4,15 +4,17 @@ import android.content.Context
 import android.content.Intent
 import android.text.format.DateUtils
 import android.util.Base64
+import android.util.Log
 import android.widget.Toast
 import com.fahamutech.duara.BuildConfig
 import com.fahamutech.duara.models.*
-import com.fahamutech.duara.services.getUser
+import com.fahamutech.duara.services.DuaraStorage
 import com.google.gson.Gson
 import com.nimbusds.jose.jwk.Curve
 import com.nimbusds.jose.jwk.ECKey
 import com.nimbusds.jose.jwk.gen.ECKeyGenerator
 import com.nimbusds.jose.util.Base64URL
+import com.nimbusds.jose.util.StandardCharset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -153,14 +155,16 @@ suspend fun generatePrivKey(privModel: PrivModel): PrivateKey {
 
 suspend fun <T> generateSharedKey(
     pubModel: PubModel,
+    context: Context,
     onDone: (secretKey: SecretKey, iv: IvParameterSpec) -> T
 ): T {
     return withContext(Dispatchers.IO) {
-        val user = getUser()
+        val storage = DuaraStorage.getInstance(context)
+        val user = storage.user().getUser()
         val ka: KeyAgreement = KeyAgreement.getInstance("ECDH")
         ka.init(generatePrivKey(user?.priv!!))
         ka.doPhase(generatePubKey(pubModel), true)
-        val sharedKey = ka.generateSecret()
+        val sharedKey: ByteArray = ka.generateSecret()
         val messageDigest = MessageDigest.getInstance("SHA-256")
         messageDigest.update(sharedKey)
         val digest = messageDigest.digest()
@@ -173,34 +177,40 @@ suspend fun <T> generateSharedKey(
     }
 }
 
-suspend fun encryptMessage(messageLocal: MessageLocal): MessageLocalOutBox {
+suspend fun encryptMessage(message: Message, context: Context): MessageOutBox {
     return withContext(Dispatchers.IO) {
-        val messageByte = Gson().toJson(messageLocal, MessageLocal::class.java)
-            .toByteArray(StandardCharsets.UTF_8)
-        return@withContext generateSharedKey(messageLocal.duara_pub!!) { secretKey, iv ->
+        val messageString = Gson().toJson(message, Message::class.java)
+        val messageBytes = messageString.toByteArray(StandardCharsets.UTF_8)
+        return@withContext generateSharedKey(message.receiver_pubkey!!, context) { secretKey, iv ->
             val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv)
-            val encByte = cipher.doFinal(messageByte)
+            val encByte: ByteArray = cipher.doFinal(messageBytes)
             val enc = Base64.encodeToString(encByte, Base64.DEFAULT)
-            val messageOut = MessageLocalOutBox()
-            messageOut.to = messageLocal.duara_id!!
-            messageOut.from = messageLocal.from
-            messageOut.message = enc
-            return@generateSharedKey messageOut
+            return@generateSharedKey MessageOutBox(
+                receiver_pubkey = message.receiver_pubkey,
+                sender_pubkey = message.sender_pubkey,
+                message = enc
+            )
         }
     }
 }
 
-suspend fun decryptMessage(messageRemote: MessageRemote): MessageLocal {
+suspend fun decryptMessage(messageRemote: MessageRemote, context: Context): Message? {
     return withContext(Dispatchers.IO) {
-        generateSharedKey(messageRemote.from) { secretKey, iv ->
-            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, iv)
-            val decryptMeBytes: ByteArray = Base64.decode(messageRemote.message, Base64.DEFAULT)
-            val textBytes = cipher.doFinal(decryptMeBytes)
-            val originalText = String(textBytes)
-            return@generateSharedKey Gson().fromJson(originalText, MessageLocal::class.java)
+        var message: Message? = null
+        try {
+            generateSharedKey(messageRemote.sender_pubkey!!, context) { secretKey, iv ->
+                val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+                cipher.init(Cipher.DECRYPT_MODE, secretKey, iv)
+                val decryptMeBytes: ByteArray = Base64.decode(messageRemote.message, Base64.DEFAULT)
+                val textBytes = cipher.doFinal(decryptMeBytes)
+                val originalText = String(textBytes, StandardCharset.UTF_8)
+                message = Gson().fromJson(originalText, Message::class.java)
+            }
+        } catch (e: Throwable) {
+            Log.e("ERROR DECRY", e.toString())
         }
+        message
     }
 }
 

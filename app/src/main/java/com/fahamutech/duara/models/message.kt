@@ -1,13 +1,15 @@
 package com.fahamutech.duara.models
 
+import androidx.room.Embedded
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.fahamutech.duara.utils.stringFromDate
-import io.realm.RealmObject
-import io.realm.annotations.PrimaryKey
 import java.util.*
 
 enum class MessageType {
     TEXT,
-    IMAGE
+    IMAGE,
+    ENCRYPTED
 }
 
 enum class MessageStatus {
@@ -16,9 +18,8 @@ enum class MessageStatus {
 }
 
 class MessageRemote(
-    var to: String,
-    var from: PubModel,
-    // encrypted_message(#MessageLocal)
+    var receiver_pubkey: PubModel?,
+    var sender_pubkey: PubModel?,
     var message: String
 )
 
@@ -31,37 +32,42 @@ class MessageRemoteResponse {
     var results: List<MutableMap<String, Any>> = mutableListOf()
 }
 
-open class MessageLocal(
+@Entity(tableName = "message")
+data class Message(
     @PrimaryKey
     var id: String = UUID.randomUUID().toString(),
     var date: String = stringFromDate(Date()),
     var type: String = MessageType.TEXT.toString(),
     var content: String = "",
-    var fromNickname: String = "",
-    var from: PubModel? = null,
-    var duara_id: String? = "", // to
-    var duara_pub: PubModel? = null,
+    var sender_nickname: String = "",
+    var receiver_nickname: String = "",
+    @Embedded(prefix = "sender_pubkey_")
+    var sender_pubkey: PubModel? = null,
+    var duara_id: String? = "",
+    @Embedded(prefix = "receiver_pubkey_")
+    var receiver_pubkey: PubModel? = null,
+    var maongezi_id: String? = null,
     var status: String = MessageStatus.READ.toString()
-) : RealmObject()
+)
 
-open class MessageLocalSignature: RealmObject() {
-    var date: String = stringFromDate(Date())
+@Entity(tableName = "message_cid")
+data class MessageCID(
     @PrimaryKey
-    var cid: String? = ""
-}
-
-open class MessageLocalOutBox : RealmObject() {
-    // remote_duara_hash
-    var to: String = UUID.randomUUID().toString() // duara_id
-    var from: PubModel? = null
-
-    // encrypted_message(#MessageLocal)
-    var message: String = ""
+    var cid: String = UUID.randomUUID().toString(),
     var date: String = stringFromDate(Date())
+)
 
+@Entity(tableName = "message_outbox")
+data class MessageOutBox(
     @PrimaryKey
-    var id: String = UUID.randomUUID().toString()
-}
+    var id: String = UUID.randomUUID().toString(),
+    @Embedded(prefix = "sender_pubkey_")
+    var sender_pubkey: PubModel? = null,
+    @Embedded(prefix = "receiver_pubkey_")
+    var receiver_pubkey: PubModel? = null,
+    var message: String = "",
+    var date: String = stringFromDate(Date())
+)
 
 
 

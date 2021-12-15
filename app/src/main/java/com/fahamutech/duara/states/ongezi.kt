@@ -1,56 +1,55 @@
 package com.fahamutech.duara.states
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fahamutech.duara.components.Logo
-import com.fahamutech.duara.models.DuaraRemote
-import com.fahamutech.duara.models.MessageLocal
-import com.fahamutech.duara.models.Ongezi
-import com.fahamutech.duara.models.UserModel
-import com.fahamutech.duara.services.getDuaraByPubX
-import com.fahamutech.duara.services.getOngeziMessagesInStore
-import com.fahamutech.duara.services.saveMessageInStore
-import com.fahamutech.duara.services.updateOngeziLastSeen
-import com.fahamutech.duara.utils.messageToApp
+import androidx.room.withTransaction
+import com.fahamutech.duara.models.*
+import com.fahamutech.duara.services.DuaraStorage
+import com.fahamutech.duara.utils.encryptMessage
 import com.fahamutech.duara.utils.stringFromDate
-import com.fahamutech.duara.utils.withTryCatch
 import com.fahamutech.duara.workers.startSendMessageWorker
 import kotlinx.coroutines.launch
 import java.util.*
 
 class OngeziState : ViewModel() {
-    private val _duara = MutableLiveData<DuaraRemote>(null)
     private val _messages =
-        MutableLiveData<MutableList<MessageLocal>>(mutableListOf())
-    val duaraRemote: LiveData<DuaraRemote> = _duara
-    val messages: LiveData<MutableList<MessageLocal>> = _messages
+        MutableLiveData<MutableList<Message>>(mutableListOf())
+    val messages: LiveData<MutableList<Message>> = _messages
 
-    fun fetchMessage(ongeziId: String) {
+    fun fetchMessage(ongeziId: String, context: Context) {
+        val storage = DuaraStorage.getInstance(context)
         viewModelScope.launch {
-            val messages = getOngeziMessagesInStore(ongeziId)
+            val messages = storage.message().maongeziMessages(ongeziId)
             _messages.value = messages
         }
     }
 
-    fun saveMessage(ongezi: Ongezi, message: String, userModel: UserModel, context: Context) {
+    fun saveMessage(
+        maongezi: Maongezi, message: String, userModel: UserModel, context: Context
+    ) {
+        val storage = DuaraStorage.getInstance(context)
         viewModelScope.launch {
-            val messageLocal = MessageLocal(
-                date = stringFromDate(Date()),
+            val date = stringFromDate(Date())
+            val messageLocal = Message(
+                date = date,
                 content = message,
-                duara_id = ongezi.duara_id,
-                duara_pub = ongezi.duara_pub,
-                from = userModel.pub,
-                fromNickname = userModel.nickname
+                duara_id = maongezi.receiver_duara_id,
+                receiver_pubkey = maongezi.receiver_pubkey,
+                sender_pubkey = userModel.pub,
+                sender_nickname = userModel.nickname,
+                receiver_nickname = maongezi.receiver_nickname,
+                maongezi_id = maongezi.id
             )
-            saveMessageInStore(messageLocal)
-            updateOngeziLastSeen(ongezi.id)
-            val messages = getOngeziMessagesInStore(ongezi.id)
-//            Log.e("*******", messages.size.toString())
-            _messages.value = messages
+            val messageOutbox = encryptMessage(messageLocal, context)
+            storage.withTransaction {
+                storage.message().save(messageLocal)
+                storage.messageOutbox().save(messageOutbox)
+                storage.maongezi().updateOngeziLastSeen(maongezi.id, date)
+            }
+            _messages.value = (mutableListOf(messageLocal) + _messages.value!!).toMutableList()
             startSendMessageWorker(context)
         }
     }

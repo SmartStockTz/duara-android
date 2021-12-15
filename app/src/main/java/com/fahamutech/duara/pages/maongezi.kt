@@ -6,22 +6,25 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.fahamutech.duara.components.HamnaMaongezi
 import com.fahamutech.duara.components.ListYaMaongeziYote
 import com.fahamutech.duara.components.MaongeziMapyaFAB
 import com.fahamutech.duara.components.MaongeziTopBar
 import com.fahamutech.duara.models.UserModel
-import com.fahamutech.duara.services.getUser
+import com.fahamutech.duara.services.DuaraStorage
 import com.fahamutech.duara.states.MaongeziState
+import kotlinx.coroutines.launch
 
 @ExperimentalFoundationApi
 @Composable
-fun Maongezi(
-    maongeziState: MaongeziState,
+fun MaongeziPage(
+    maongeziState: MaongeziState = viewModel(),
     navController: NavController,
     context: Context
 ) {
+    val scope = rememberCoroutineScope()
     val maongezi by maongeziState.maongezi.observeAsState()
     var user: UserModel? by remember { mutableStateOf(null) }
     if (user != null) {
@@ -48,18 +51,20 @@ fun Maongezi(
             }
         )
     }
-    LaunchedEffect("maongezi") {
-        user = getUser()
-//        Log.e("JUGGG", user?.nickname ?: "**********'")
-        if (user == null) {
-            navController.navigate("jiunge") {
-                popUpTo(0) {
-                    inclusive = true
+    LaunchedEffect("maongezi-page") {
+        scope.launch {
+            val uDao = DuaraStorage.getInstance(context).user()
+            user = uDao.getUser()
+            if (user == null) {
+                navController.navigate("jiunge") {
+                    popUpTo(0) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
                 }
-                launchSingleTop = true
+            } else {
+                maongeziState.fetchMaongezi(context)
             }
-        } else {
-            maongeziState.fetMaongezi()
         }
     }
 }

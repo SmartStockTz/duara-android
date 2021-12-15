@@ -2,6 +2,7 @@ package com.fahamutech.duara.services
 
 import android.annotation.SuppressLint
 import android.content.ContentResolver
+import android.content.Context
 import android.provider.Settings
 import android.util.Log
 import com.fahamutech.duara.models.UserModel
@@ -13,17 +14,19 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.util.*
 
-suspend fun getIdentity(nickname: String): UserModel {
+suspend fun getIdentity(nickname: String, context: Context): UserModel {
     return withContext(Dispatchers.IO) {
+        val storage = DuaraStorage.getInstance(context)
         val identityModel = generateKeyPair()
         val token = getFcmToken()
-        val user = UserModel()
-        user.nickname = nickname
-        user.picture = ""
-        user.priv = identityModel.priv
-        user.pub = identityModel.pub
-        user.token = token
-        saveUser(user)
+        val user = UserModel(
+            nickname = nickname,
+            picture = "",
+            priv = identityModel.priv,
+            pub = identityModel.pub,
+            token = token
+        )
+        storage.user().saveUser(user)
         return@withContext user
     }
 }

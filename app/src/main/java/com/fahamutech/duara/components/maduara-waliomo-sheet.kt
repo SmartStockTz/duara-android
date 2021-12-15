@@ -1,14 +1,9 @@
 package com.fahamutech.duara.components
 
-import android.util.Log
-import androidx.compose.foundation.ExperimentalFoundationApi
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.GridCells
-import androidx.compose.foundation.lazy.LazyVerticalGrid
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -23,32 +18,24 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.fahamutech.duara.R
 import com.fahamutech.duara.models.DuaraRemote
-import com.fahamutech.duara.models.Ongezi
-import com.fahamutech.duara.services.saveOngezi
-import com.fahamutech.duara.utils.stringFromDate
+import com.fahamutech.duara.models.Maongezi
+import com.fahamutech.duara.services.DuaraStorage
 import kotlinx.coroutines.launch
-import java.util.*
 
-@ExperimentalFoundationApi
-@ExperimentalMaterialApi
-@Composable
-fun MaduaraWaliomoSheetContent(duaraRemoteWaliomo: List<DuaraRemote>, navController: NavController) {
-    Column(
-        modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth(),
-    ) {
-        WaliomoKwenyeDuaraHeader()
-        LazyVerticalGrid(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            cells = GridCells.Adaptive(minSize = 102.dp),
-        ) {
-            items(duaraRemoteWaliomo) { d ->
-                DuaraMemberItem(d, navController)
-            }
-        }
-    }
-}
+//
+//@ExperimentalFoundationApi
+//@ExperimentalMaterialApi
+//@Composable
+//fun MaduaraWaliomoSheetContent(duaraRemoteWaliomo: List<DuaraRemote>, navController: NavController) {
+//    Column(
+//        modifier = Modifier
+//            .padding(16.dp)
+//            .fillMaxWidth(),
+//    ) {
+//        WaliomoKwenyeDuaraHeader()
+//
+//    }
+//}
 
 @Composable
 fun WaliomoKwenyeDuaraHeader() {
@@ -63,11 +50,11 @@ fun WaliomoKwenyeDuaraHeader() {
 }
 
 @Composable
-fun DuaraMemberItem(duaraRemoteLocal: DuaraRemote, navController: NavController) {
+fun DuaraMemberItem(duaraRemoteLocal: DuaraRemote, navController: NavController, context: Context) {
     val scope = rememberCoroutineScope()
     Column(
         modifier = Modifier.clickable {
-            scope.launch { startMaongeziNaMtu(duaraRemoteLocal, navController) }
+            scope.launch { startMaongeziNaMtu(duaraRemoteLocal, navController, context) }
         }
     ) {
         Box(
@@ -97,13 +84,18 @@ fun DuaraMemberItem(duaraRemoteLocal: DuaraRemote, navController: NavController)
     }
 }
 
-private suspend fun startMaongeziNaMtu(duaraRemote: DuaraRemote, navController: NavController) {
-    val ongezi = Ongezi()
-    ongezi.id = duaraRemote.pub!!.x
-    ongezi.duara_nickname = duaraRemote.nickname
-    ongezi.duara_pub = duaraRemote.pub
-    ongezi.duara_id = duaraRemote.id
-    saveOngezi(ongezi)
+private suspend fun startMaongeziNaMtu(
+    duaraRemote: DuaraRemote, navController: NavController,
+    context: Context
+) {
+    val ongezi = Maongezi(
+        receiver_nickname = duaraRemote.nickname,
+        receiver_pubkey = duaraRemote.pub,
+        receiver_duara_id = duaraRemote.id,
+        id = duaraRemote.pub!!.x,
+    )
+    val storage = DuaraStorage.getInstance(context)
+    storage.maongezi().saveOngezi(ongezi)
     navController.navigate("ongezi/${ongezi.id}") {
         popUpTo("maongezi")
         launchSingleTop = true

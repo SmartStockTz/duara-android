@@ -2,48 +2,42 @@ package com.fahamutech.duara.pages
 
 import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.fahamutech.duara.components.*
-import com.fahamutech.duara.models.DuaraRemote
+import com.fahamutech.duara.components.HelperMessage
+import com.fahamutech.duara.components.MaduaraList
+import com.fahamutech.duara.components.MaduaraTopBar
 import com.fahamutech.duara.models.UserModel
-import com.fahamutech.duara.services.getUser
+import com.fahamutech.duara.services.DuaraStorage
 import com.fahamutech.duara.states.MaduaraState
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @ExperimentalFoundationApi
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun Maduara(
-    maduaraState: MaduaraState,
+fun MaduaraPage(
+    maduaraState: MaduaraState = viewModel(),
     navController: NavController,
     context: Context
 ) {
-    var duaraWaliomo by remember { mutableStateOf<List<DuaraRemote>>(mutableListOf()) }
     val scope = rememberCoroutineScope()
     var user: UserModel? by remember { mutableStateOf(null) }
     if (user != null) {
-        val bottomState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
-        ModalBottomSheetLayout(
-            sheetState = bottomState,
-            sheetContent = { MaduaraWaliomoSheetContent(duaraWaliomo, navController) },
-            sheetShape = RoundedCornerShape(30.dp, 30.dp)
-        ) {
-            MaduaraView(maduaraState, navController, bottomState, scope, context) {
-                duaraWaliomo = it
-            }
-        }
+        MaduaraView(maduaraState, navController, context)
     }
     LaunchedEffect("maduara") {
         scope.launch {
-            user = getUser()
+            val uDao = DuaraStorage.getInstance(context).user()
+            user = uDao.getUser()
             if (user == null) {
                 navController.navigate("jiunge") {
                     popUpTo(0) {
@@ -61,18 +55,13 @@ fun Maduara(
 @ExperimentalMaterialApi
 @Composable
 fun MaduaraView(
-    maduaraState: MaduaraState,
-    navController: NavController,
-    bottomState: ModalBottomSheetState,
-    scope: CoroutineScope,
-    context: Context,
-    onDuaraWaliomo: (List<DuaraRemote>) -> Unit
+    maduaraState: MaduaraState, navController: NavController, context: Context
 ) {
-    val localNumbers by maduaraState.maduaraLocalGroupByInitial.observeAsState()
+    val maduara by maduaraState.maduara.observeAsState()
     Scaffold(
         topBar = { MaduaraTopBar(maduaraState, context, navController) },
         content = {
-            if (localNumbers?.keys?.isEmpty() == true) {
+            if (maduara?.isEmpty() == true) {
                 Text("")
             } else {
                 Column(
@@ -81,13 +70,10 @@ fun MaduaraView(
                         .fillMaxHeight()
                 ) {
                     HelperMessage()
-                    MaduaraLocalList(localNumbers!!, maduaraState) {
-                        scope.launch { bottomState.show() }
-                        onDuaraWaliomo(it)
-                    }
+                    maduara?.let { it1 -> MaduaraList(it1, navController, context) }
                 }
             }
         }
     )
-    UpoMwenyeweDialog(maduaraState, context)
+//    UpoMwenyeweDialog(maduaraState, context)
 }

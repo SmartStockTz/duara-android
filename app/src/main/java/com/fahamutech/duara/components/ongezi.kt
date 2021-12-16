@@ -149,17 +149,10 @@ fun OngeziBody(
         )
         OngeziComposeBottomBar(maongezi, ongeziState, user, context)
     }
-    DisposableEffect(maongezi.id) {
-        ongeziState.fetchMessage(maongezi.id, context)
-        onDispose {
-            ongeziState.resetMessages()
-        }
-    }
 }
 
 @Composable
 fun OngeziMessageList(messages: List<Message>, user: UserModel, modifier: Modifier) {
-    Log.e("***WOWOWMM", messages.size.toString())
     val state = rememberLazyListState()
     LazyColumn(
         modifier = modifier,

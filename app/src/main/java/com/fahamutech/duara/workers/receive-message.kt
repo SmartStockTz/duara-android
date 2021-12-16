@@ -111,10 +111,10 @@ private suspend fun handleNewMessage(
         } else {
             storage.withTransaction {
                 storage.message().save(messageDecrypted)
-                storage.messageCid().delete(message.cid?:"")
+                storage.messageCid().delete(message.cid ?: "")
             }
         }
-        sendNotification(context, messageDecrypted)
+        showMessageNotification(context, messageDecrypted)
     } catch (e: Throwable) {
         Log.e("Handle message", e.toString())
         throw e
@@ -172,61 +172,6 @@ fun startPeriodicalRetrieveMessageWorker(context: Context) {
             ExistingPeriodicWorkPolicy.KEEP,
             periodicTimeRetrieveMessageWorker()
         )
-}
-
-
-private fun sendNotification(context: Context, message: Message) {
-    val id = Math.random().roundToInt()
-    val intent = Intent(context, DuaraApp::class.java)
-    intent.flags = FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK
-    intent.putExtra(message.duara_id, message.id)
-    intent.putExtra("url", "ongezi/${message.maongezi_id}")
-    val NOTIFICATION_CHANNEL = message.duara_id!!
-    val notificationManager =
-        context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-    val titleNotification = message.sender_nickname
-    val subtitleNotification = message.content
-    val pendingIntent = if (SDK_INT >= Build.VERSION_CODES.M) {
-        getActivity(
-            context,
-            id,
-            intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-    } else {
-        getActivity(context, id, intent, 0)
-    }
-    val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
-        .setSmallIcon(R.drawable.ic_notification_icon)
-        .setContentTitle(titleNotification)
-        .setContentText(subtitleNotification)
-        .setDefaults(DEFAULT_ALL)
-        .setContentIntent(pendingIntent)
-        .setAutoCancel(true)
-
-    notification.priority = PRIORITY_MAX
-
-    if (SDK_INT >= O) {
-        notification.setChannelId(NOTIFICATION_CHANNEL)
-        val ringtoneManager = getDefaultUri(TYPE_NOTIFICATION)
-        val audioAttributes = AudioAttributes.Builder().setUsage(USAGE_NOTIFICATION_RINGTONE)
-            .setContentType(CONTENT_TYPE_SONIFICATION).build()
-        val NOTIFICATION_NAME = message.sender_nickname
-        val channel = NotificationChannel(
-            NOTIFICATION_CHANNEL,
-            NOTIFICATION_NAME,
-            NotificationManager.IMPORTANCE_HIGH
-        )
-
-        channel.enableLights(true)
-        channel.lightColor = GREEN
-        channel.enableVibration(true)
-        channel.vibrationPattern = longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
-        channel.setSound(ringtoneManager, audioAttributes)
-        notificationManager.createNotificationChannel(channel)
-    }
-
-    notificationManager.notify(id, notification.build())
 }
 
 

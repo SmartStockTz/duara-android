@@ -12,21 +12,13 @@ android {
         applicationId "com.fahamutech.duara"
         minSdk 21
         targetSdk 31
-        versionCode 2
-        versionName "2021.12.15-build.2-alpha.1"
+        versionCode 3
+        versionName "2021.12.16-build.3-alpha.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary true
         }
-//        javaCompileOptions {
-//            annotationProcessorOptions {
-//                arguments += [
-//                        "room.schemaLocation"  : "$projectDir/schemas".toString(),
-//                        "room.incremental"     : "true",
-//                        "room.expandProjection": "true"]
-//            }
-//        }
     }
 
     buildTypes {

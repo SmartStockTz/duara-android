@@ -91,7 +91,7 @@ private fun OngeziItem(
             .absolutePadding(0.dp)
             .combinedClickable(
                 onClick = {
-                    navController.navigate("ongezi/${maongezi.id}") {
+                    navController.navigate("maongezi/${maongezi.id}") {
                         launchSingleTop = true
                     }
                 },

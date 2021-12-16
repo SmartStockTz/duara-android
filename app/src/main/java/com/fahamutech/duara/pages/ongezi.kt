@@ -32,7 +32,7 @@ fun OngeziPage(
             }
         )
     }
-    LaunchedEffect(id) {
+    DisposableEffect(id) {
         scope.launch {
             val storage = DuaraStorage.getInstance(context)
             val uDao = storage.user()
@@ -41,10 +41,14 @@ fun OngeziPage(
             val a = maongeziDao.getOngeziInStore(id ?: "na")
             if (a != null && user !== null) {
                 ongezi = a
+                ongeziState.fetchMessage(ongezi?.id?:"na", context)
             } else {
                 navController.popBackStack()
                 messageToApp("Imeshindwa jua unaetaka ongea nae", context)
             }
+        }
+        onDispose {
+            ongeziState.dispose()
         }
     }
 }

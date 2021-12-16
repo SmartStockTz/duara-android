@@ -96,7 +96,7 @@ private suspend fun startMaongeziNaMtu(
     )
     val storage = DuaraStorage.getInstance(context)
     storage.maongezi().saveOngezi(ongezi)
-    navController.navigate("ongezi/${ongezi.id}") {
+    navController.navigate("maongezi/${ongezi.id}") {
         popUpTo("maongezi")
         launchSingleTop = true
     }

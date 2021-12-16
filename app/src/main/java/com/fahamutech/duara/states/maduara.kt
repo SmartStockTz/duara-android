@@ -15,13 +15,11 @@ import com.fahamutech.duara.utils.withTryCatch
 import kotlinx.coroutines.launch
 
 class MaduaraState : ViewModel() {
-    private val _showOneMemberDialog = MutableLiveData(false)
     private val _maduara = MutableLiveData<List<DuaraRemote>>(mutableListOf())
     private val _maduaraSyncProgress = MutableLiveData(false)
 
     val maduaraSyncProgress = _maduaraSyncProgress
     val maduara: LiveData<List<DuaraRemote>> = _maduara
-    val showOneMemberDialog: LiveData<Boolean> = _showOneMemberDialog
 
     fun fetchMaduara(context: Context) {
         viewModelScope.launch {
@@ -57,10 +55,6 @@ class MaduaraState : ViewModel() {
                 _maduaraSyncProgress.value = false
             }
         }
-    }
-
-    fun toggleShowOneMemberDialog(value: Boolean) {
-        _showOneMemberDialog.value = value
     }
 
     fun searchDuara(keyword: String, context: Context) {

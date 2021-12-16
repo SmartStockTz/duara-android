@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.database.getStringOrNull
+import androidx.room.withTransaction
 import com.fahamutech.duara.models.DuaraLocal
 import com.fahamutech.duara.models.DuaraRemote
 import com.fahamutech.duara.models.DuaraSync
@@ -169,7 +170,10 @@ suspend fun syncContacts(context: Context): MutableList<DuaraRemote> {
             syncSendModel.device = getDeviceId(context.contentResolver)
             val maduara =
                 getHttpClient(MaduaraFunctions::class.java).syncs(syncSendModel).await()
-            storage.maduara().saveMaduara(maduara)
+            storage.withTransaction {
+                storage.maduara().deleteAll()
+                storage.maduara().saveMaduara(maduara)
+            }
             maduara.toMutableList()
         } else mutableListOf()
     }

@@ -16,6 +16,8 @@ import androidx.navigation.NavController
 import com.fahamutech.duara.components.HelperMessage
 import com.fahamutech.duara.components.MaduaraList
 import com.fahamutech.duara.components.MaduaraTopBar
+import com.fahamutech.duara.components.UpoMwenyeweDialog
+import com.fahamutech.duara.models.DuaraRemote
 import com.fahamutech.duara.models.UserModel
 import com.fahamutech.duara.services.DuaraStorage
 import com.fahamutech.duara.states.MaduaraState
@@ -57,23 +59,25 @@ fun MaduaraPage(
 fun MaduaraView(
     maduaraState: MaduaraState, navController: NavController, context: Context
 ) {
-    val maduara by maduaraState.maduara.observeAsState()
+    val maduara by maduaraState.maduara.observeAsState(mutableListOf())
+    val syncsProgress by maduaraState.maduaraSyncProgress.observeAsState(false)
     Scaffold(
         topBar = { MaduaraTopBar(maduaraState, context, navController) },
         content = {
-            if (maduara?.isEmpty() == true) {
-                Text("")
+            if (maduara.isEmpty().and(syncsProgress == false)) {
+                UpoMwenyeweDialog(maduaraState, context)
             } else {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight()
                 ) {
-                    HelperMessage()
-                    maduara?.let { it1 -> MaduaraList(it1, navController, context) }
+                    if (maduara.isNotEmpty()){
+                        HelperMessage()
+                    }
+                    MaduaraList(maduara, navController, context)
                 }
             }
         }
     )
-//    UpoMwenyeweDialog(maduaraState, context)
 }

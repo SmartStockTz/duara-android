@@ -6,7 +6,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.GridCells
+import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,16 +31,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.fahamutech.duara.R
-import com.fahamutech.duara.models.Duara
 import com.fahamutech.duara.models.DuaraLocal
-import com.fahamutech.duara.services.countWaliomoKwenyeDuara
-import com.fahamutech.duara.services.getMaduaraByDuara
+import com.fahamutech.duara.models.DuaraRemote
 import com.fahamutech.duara.states.MaduaraState
 import com.fahamutech.duara.utils.duaraLocalToRemoteHash
-import com.fahamutech.duara.utils.stringToSHA256
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import java.util.*
 
 @Composable
 fun MaduaraTopBar(
@@ -106,7 +101,9 @@ private fun TopBarNormal(
 }
 
 @Composable
-private fun TopBarSearch(maduaraState: MaduaraState, context: Context, onSearchClose: () -> Unit) {
+private fun TopBarSearch(
+    maduaraState: MaduaraState, context: Context, onSearchClose: () -> Unit
+) {
 //    var maduaraFilter by maduaraState.maduaraFilter.observeAsState()
     var searchKeyword by remember { mutableStateOf("") }
     val focusRequester = FocusRequester()
@@ -149,8 +146,7 @@ private fun TopBarSearch(maduaraState: MaduaraState, context: Context, onSearchC
 @Composable
 fun HelperMessage() {
     Text(
-        text = "Chagua duara kuona waliomo na uchague " +
-                "wa kuongea nae.",
+        text = "Watu wenye namba za simu sawa na zako.",
         fontWeight = FontWeight(300),
         fontSize = 14.sp,
         modifier = Modifier
@@ -162,62 +158,71 @@ fun HelperMessage() {
 @ExperimentalMaterialApi
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MaduaraLocalList(
-    grouped: Map<Char, List<DuaraLocal>>,
-    maduaraState: MaduaraState,
-    showModalSheet: (List<Duara>) -> Unit
+fun MaduaraList(
+    maduara: List<DuaraRemote>, navController: NavController, context: Context
 ) {
     val st = rememberLazyListState()
-    LazyColumn(
+    LazyVerticalGrid(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.fillMaxWidth(),
+        cells = GridCells.Adaptive(minSize = 102.dp),
         state = st
     ) {
-        grouped.forEach { (initial, duaraLocalByInitial) ->
-            stickyHeader {
-                Text(initial.toString())
-            }
-            items(duaraLocalByInitial) { duaraLocal ->
-                MaduaraLocalItem(duaraLocal, maduaraState, showModalSheet)
-            }
+        items(maduara) { d ->
+            DuaraMemberItem(d, navController, context)
         }
     }
+//    LazyVerticalGrid(
+//        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+//        modifier = Modifier.fillMaxWidth(),
+//        state = st,
+//        cells =
+//    ) {
+//        grouped.forEach { (initial, duaraLocalByInitial) ->
+//            stickyHeader {
+//                Text(initial.toString())
+//            }
+//            items(duaraLocalByInitial) { duaraLocal ->
+//                MaduaraLocalItem(duaraLocal, maduaraState, showModalSheet)
+//            }
+//        }
+//    }
 }
 
-@ExperimentalMaterialApi
-@Composable
-private fun MaduaraLocalItem(
-    i: DuaraLocal,
-    maduaraState: MaduaraState,
-    showModalSheet: (List<Duara>) -> Unit
-) {
-    val scope = rememberCoroutineScope()
-    var waliomo by remember { mutableStateOf(1) }
-    val message = waliomoMessage(waliomo)
-    MaduaraLocalItemView(i, message) {
-        scope.launch {
-            showDuaraMembersOrPromo(i, maduaraState, showModalSheet)
-        }
-    }
-    LaunchedEffect(i.normalizedNumber) {
-        waliomo = countDuaraMembers(i.normalizedNumber)
-    }
-}
+//@ExperimentalMaterialApi
+//@Composable
+//private fun MaduaraLocalItem(
+//    i: DuaraLocal,
+//    maduaraState: MaduaraState,
+//    showModalSheet: (List<DuaraRemote>) -> Unit
+//) {
+//    val scope = rememberCoroutineScope()
+//    var waliomo by remember { mutableStateOf(1) }
+//    val message = waliomoMessage(waliomo)
+//    MaduaraLocalItemView(i, message) {
+//        scope.launch {
+//            showDuaraMembersOrPromo(i, maduaraState, showModalSheet)
+//        }
+//    }
+//    LaunchedEffect(i.normalizedNumber) {
+//        scope.launch {
+//            waliomo = countDuaraMembers(i.normalizedNumber)
+//        }
+//    }
+//}
 
-private suspend fun showDuaraMembersOrPromo(
-    duaraLocal: DuaraLocal,
-    maduaraState: MaduaraState,
-    showModalSheet: (List<Duara>) -> Unit
-) {
-    val b = duaraLocalToRemoteHash(duaraLocal.normalizedNumber)
-    val c = getMaduaraByDuara(b)
-    if (c.isEmpty()) {
-        maduaraState.toggleShowOneMemberDialog(true)
-    } else {
-        showModalSheet(c)
-    }
-}
+//private suspend fun showDuaraMembersOrPromo(
+//    duaraLocal: DuaraLocal,
+//    maduaraState: MaduaraState,
+//    showModalSheet: (List<DuaraRemote>) -> Unit
+//) {
+//    val b = duaraLocalToRemoteHash(duaraLocal.normalizedNumber)
+//    val c = getMaduaraByDuaraNumberHash(b)
+//    if (c.isEmpty()) {
+//        maduaraState.toggleShowOneMemberDialog(true)
+//    } else {
+//        showModalSheet(c)
+//    }
+//}
 
 @Composable
 private fun MaduaraLocalItemView(
@@ -268,11 +273,11 @@ private fun MaduaraLocalItemView(
     }
 }
 
-private suspend fun countDuaraMembers(normalizedNumber: String): Int {
-    val a = stringToSHA256(normalizedNumber)
-    val b = stringToSHA256(a)
-    return countWaliomoKwenyeDuara(b)
-}
+//private suspend fun countDuaraMembers(normalizedNumber: String): Int {
+//    val a = stringToSHA256(normalizedNumber)
+//    val b = stringToSHA256(a)
+//    return countWaliomoKwenyeDuara(b)
+//}
 
 private fun waliomoMessage(waliomo: Int): String {
     var message = "Upo mwenyewe."

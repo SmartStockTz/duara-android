@@ -1,101 +1,82 @@
 package com.fahamutech.duara
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.fahamutech.duara.pages.JiungePage
-import com.fahamutech.duara.pages.Maduara
-import com.fahamutech.duara.pages.Maongezi
+import com.fahamutech.duara.pages.MaduaraPage
+import com.fahamutech.duara.pages.MaongeziPage
 import com.fahamutech.duara.pages.OngeziPage
-import com.fahamutech.duara.services.initLocalDatabase
-import com.fahamutech.duara.states.JiungeState
-import com.fahamutech.duara.states.MaduaraState
-import com.fahamutech.duara.states.MaongeziState
 import com.fahamutech.duara.ui.theme.DuaraTheme
+import com.fahamutech.duara.workers.startPeriodicalRetrieveMessageWorker
+import com.fahamutech.duara.workers.startPeriodicalSendMessageWorker
+import com.google.android.gms.common.GoogleApiAvailability
 
 class DuaraApp : ComponentActivity() {
 
     @OptIn(ExperimentalFoundationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        initLocalDatabase(this)
-        val jiungeState by viewModels<JiungeState>()
-        val maongeziState by viewModels<MaongeziState>()
-        val maduaraState by viewModels<MaduaraState>()
-        setContent {
-            DuaraApp(
-                jiungeState = jiungeState,
-                maongeziState = maongeziState,
-                maduaraState = maduaraState,
-                this
-            )
-        }
+        GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(this)
+        startPeriodicalSendMessageWorker(this)
+        startPeriodicalRetrieveMessageWorker(this)
+        setContent { DuaraApp(this) }
     }
 }
 
+
+
 @ExperimentalFoundationApi
 @Composable
-fun DuaraApp(
-    jiungeState: JiungeState = viewModel(),
-    maongeziState: MaongeziState = viewModel(),
-    maduaraState: MaduaraState = viewModel(),
-    activity: ComponentActivity
-) {
+fun DuaraApp(activity: ComponentActivity) {
     val navController = rememberNavController()
     DuaraTheme {
         Surface(color = MaterialTheme.colors.background) {
             NavHost(navController = navController, startDestination = "maongezi") {
                 composable("jiunge") {
-                    JiungePage(jiungeState, activity, navController)
+                    JiungePage(
+                        context = activity,
+                        navController = navController
+                    )
                 }
                 composable("maongezi") {
-                    Maongezi(maongeziState, navController)
+                    MaongeziPage(
+                        navController = navController,
+                        context = activity
+                    )
                 }
                 composable(
-                    "ongezi/{id}",
-                    arguments = listOf(navArgument("id") { type = NavType.StringType })
+                    "maongezi/{id}",
+                    arguments = listOf(navArgument("id") { type = NavType.StringType }),
+                    deepLinks = listOf(navDeepLink {
+                        val uri = "https://duaratz.web.app/maongezi"
+                        uriPattern = "$uri/{id}"
+                    })
                 ) {
-                    OngeziPage(it.arguments?.getString("id"))
+                    OngeziPage(
+                        id = it.arguments?.getString("id"),
+                        navController = navController,
+                        context = activity
+                    )
                 }
                 composable("maduara") {
-                    Maduara(maduaraState, navController, activity)
+                    MaduaraPage(
+                        navController = navController,
+                        context = activity
+                    )
                 }
             }
         }
     }
 }
-
-//@Composable
-//fun AuthGuard(
-//    user: UserModel?,
-//    jiungeState: JiungeState,
-//    navController: NavController,
-//    activity: Activity,
-//    ok: @Composable () -> Unit
-//) {
-//    if (user === null) {
-//        JiungePage(jiungeState, activity, navController)
-//    } else {
-//        ok()
-//    }
-//}
-
-//
-//@Preview(showBackground = true)
-//@Composable
-//fun DefaultPreview() {
-//    DuaraTheme {
-//        Greeting(viewModel())
-//    }
-//}

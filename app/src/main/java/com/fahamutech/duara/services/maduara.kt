@@ -10,11 +10,11 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.database.getStringOrNull
-import com.fahamutech.duara.models.Duara
 import com.fahamutech.duara.models.DuaraLocal
+import com.fahamutech.duara.models.DuaraRemote
 import com.fahamutech.duara.models.DuaraSync
 import com.fahamutech.duara.utils.getHttpClient
-import com.fahamutech.duara.utils.message
+import com.fahamutech.duara.utils.messageToApp
 import com.fahamutech.duara.utils.stringToSHA256
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -25,7 +25,7 @@ import retrofit2.http.POST
 
 private interface MaduaraFunctions {
     @POST("/maduara/syncs")
-    fun syncs(@Body data: DuaraSync): Call<List<Duara>>
+    fun syncs(@Body data: DuaraSync): Call<List<DuaraRemote>>
 }
 
 private fun educationalDialog(activity: Activity, granted: () -> Unit) {
@@ -41,7 +41,7 @@ private fun educationalDialog(activity: Activity, granted: () -> Unit) {
             ensureContactPermission(activity, granted)
         }.setNegativeButton("Ghairi") { d, b ->
             d.dismiss()
-            message(
+            messageToApp(
                 "Duara kufanya kazi inabidi uruhusu kuona namba zako, ili uweze ona " +
                         "marafiki wa kuchati nao.", activity
             )
@@ -66,7 +66,7 @@ fun ensureContactPermission(activity: Activity, granted: () -> Unit) {
                 mutableListOf(Manifest.permission.READ_CONTACTS).toTypedArray(),
                 321
             )
-            message(
+            messageToApp(
                 "Duara kufanya kazi inabidi uruhusu kuona namba zako, ili uweze ona " +
                         "marafiki wa kuchati nao.", activity
             )
@@ -154,13 +154,14 @@ suspend fun localMaduara(context: Context): List<DuaraLocal> {
     }
 }
 
-suspend fun syncContacts(context: Context): List<Duara> {
+suspend fun syncContacts(context: Context): MutableList<DuaraRemote> {
     return withContext(Dispatchers.IO) {
-        val user = getUser()
-        if (user?.pub != null) {
+        val storage = DuaraStorage.getInstance(context)
+        val user = storage.user().getUser()
+        return@withContext if (user?.pub != null) {
             val contacts = normalisedNumberSignatures(context)
             val syncSendModel = DuaraSync()
-            syncSendModel.maduara = contacts //.subList(0,100)
+            syncSendModel.maduara = contacts
             syncSendModel.token = user.token
             syncSendModel.nickname = user.nickname
             syncSendModel.picture = user.picture
@@ -168,12 +169,9 @@ suspend fun syncContacts(context: Context): List<Duara> {
             syncSendModel.device = getDeviceId(context.contentResolver)
             val maduara =
                 getHttpClient(MaduaraFunctions::class.java).syncs(syncSendModel).await()
-            saveMaduara(maduara)
-            return@withContext mutableListOf()
-        } else {
-//            throw Throwable(message = "Tumeshindwa jua taarifa zako")
-            mutableListOf()
-        }
+            storage.maduara().saveMaduara(maduara)
+            maduara.toMutableList()
+        } else mutableListOf()
     }
 }
 

@@ -1,28 +1,32 @@
 package com.fahamutech.duara.components
 
-import androidx.compose.foundation.Image
+import android.content.Context
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.sharp.Add
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.fahamutech.duara.R
-import com.fahamutech.duara.models.Ongezi
+import com.fahamutech.duara.models.Maongezi
+import com.fahamutech.duara.services.DuaraStorage
+import com.fahamutech.duara.states.MaongeziState
 import com.fahamutech.duara.ui.theme.DuaraGreen
+import com.fahamutech.duara.utils.timeAgo
+import kotlinx.coroutines.launch
 
 @Composable
 fun MaongeziTopBar() {
@@ -51,10 +55,157 @@ fun MaongeziMapyaFAB(navController: NavController) {
     }
 }
 
+@ExperimentalFoundationApi
 @Composable
-fun ListYaMaongeziYote(maongezi: List<Ongezi>) {
-    Text("Maongezi yote ${maongezi.size}")
+fun ListYaMaongeziYote(
+    maongezi: List<Maongezi>, maongeziState: MaongeziState, navController: NavController,
+    context: Context
+) {
+    val st = rememberLazyListState()
+    LazyColumn(
+        contentPadding = PaddingValues(horizontal = 0.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier.fillMaxWidth(),
+        state = st
+    ) {
+        items(maongezi) { ongezi ->
+            OngeziItem(ongezi, maongeziState, navController, context)
+        }
+    }
 }
+
+@ExperimentalFoundationApi
+@Composable
+private fun OngeziItem(
+    maongezi: Maongezi,
+    maongeziState: MaongeziState,
+    navController: NavController,
+    context: Context
+) {
+    val scope = rememberCoroutineScope()
+    var message by remember { mutableStateOf("") }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .absolutePadding(0.dp)
+            .combinedClickable(
+                onClick = {
+                    navController.navigate("maongezi/${maongezi.id}") {
+                        launchSingleTop = true
+                    }
+                },
+                onLongClick = {
+                    showDeleteDialog = true
+                }
+            ),
+    ) {
+        OngeziItemPicture(maongezi)
+        Column(
+            modifier = Modifier.absolutePadding(6.dp, 8.dp, 16.dp, 8.dp),
+        ) {
+            OngeziItemNameAndTime(maongezi)
+            OngeziItemLastMessage(message)
+        }
+    }
+    ShowDeleteConversationDialog(showDeleteDialog) {
+        when (it) {
+            "n" -> {
+                maongeziState.futaOngezi(maongezi, context)
+                showDeleteDialog = false
+            }
+            "h" -> {
+                showDeleteDialog = false
+            }
+            "f" -> {
+                showDeleteDialog = false
+            }
+        }
+    }
+    LaunchedEffect(maongezi.id) {
+        scope.launch {
+            val storage = DuaraStorage.getInstance(context)
+            message = storage.message().maongeziLastMessage(maongezi.id)?.content ?: ""
+        }
+    }
+}
+
+@Composable
+private fun ShowDeleteConversationDialog(
+    showDeleteDialog: Boolean, onClose: (action: String) -> Unit
+) {
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { onClose("f") },
+            text = {
+                Text("Unataka futa maongezi haya?")
+            },
+            dismissButton = {
+                Button(onClick = { onClose("h") }) {
+                    Text(text = "Hapana")
+                }
+            },
+            confirmButton = {
+                Button(onClick = { onClose("n") }) {
+                    Text(text = "Ndio")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun OngeziItemLastMessage(message: String) {
+    Text(
+        text = message,
+        fontWeight = FontWeight(300),
+        fontSize = 13.sp,
+        color = Color(0xFF747272),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier.absolutePadding(0.dp, 0.dp, 48.dp, 0.dp)
+    )
+}
+
+@Composable
+private fun OngeziItemNameAndTime(maongezi: Maongezi) {
+    Row {
+        Text(
+            text = maongezi.receiver_nickname,
+            fontWeight = FontWeight(500),
+            fontSize = 16.sp
+        )
+        Spacer(modifier = Modifier.weight(1.0f))
+        Text(
+            text = timeAgo(maongezi.date),
+            color = Color(0xFF747272),
+            fontWeight = FontWeight(400),
+            fontSize = 14.sp,
+//                    lineHeight = 24.sp
+        )
+    }
+}
+
+@Composable
+private fun OngeziItemPicture(maongezi: Maongezi) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.absolutePadding(16.dp, 8.dp, 0.dp, 8.dp)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_list_item_bg),
+            contentDescription = "profile picture",
+            modifier = Modifier.size(44.dp)
+        )
+        Text(
+            text = maongezi.receiver_nickname[0].toString(),
+            fontWeight = FontWeight(400),
+            color = Color.White,
+            fontSize = 16.sp
+        )
+    }
+}
+
 
 @Composable
 fun HamnaMaongezi() {

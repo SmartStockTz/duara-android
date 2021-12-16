@@ -5,42 +5,29 @@ import android.content.ContentResolver
 import android.content.Context
 import android.provider.Settings
 import android.util.Log
-import com.fahamutech.duara.models.IdentityModel
 import com.fahamutech.duara.models.UserModel
-import com.fahamutech.duara.utils.getHttpClient
+import com.fahamutech.duara.utils.generateKeyPair
 import com.fahamutech.duara.utils.stringToSHA256
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import retrofit2.Call
-import retrofit2.await
-import retrofit2.http.GET
 import java.util.*
 
-private interface AccountService {
-    @GET("/account/identity")
-    fun identity(): Call<IdentityModel>
-}
-
-suspend fun getIdentity(nickname: String): UserModel {
+suspend fun getIdentity(nickname: String, context: Context): UserModel {
     return withContext(Dispatchers.IO) {
-        val identity = getHttpClient(AccountService::class.java).identity().await()
-//        Log.e("IDENTITY", identity.did)
-        if (identity.did.isEmpty()) {
-            throw Throwable(message = "Imeshindwa kitengeza utambulisho wako, jaribu tena")
-        } else {
-            val token = getFcmToken()
-            val user = UserModel()
-            user.did = identity.did
-            user.nickname = nickname
-            user.picture = ""
-            user.priv = identity.priv
-            user.pub = identity.pub
-            user.token = token
-            saveUser(user)
-            return@withContext user
-        }
+        val storage = DuaraStorage.getInstance(context)
+        val identityModel = generateKeyPair()
+        val token = getFcmToken()
+        val user = UserModel(
+            nickname = nickname,
+            picture = "",
+            priv = identityModel.priv,
+            pub = identityModel.pub,
+            token = token
+        )
+        storage.user().saveUser(user)
+        return@withContext user
     }
 }
 
@@ -50,7 +37,7 @@ suspend fun getFcmToken(): String {
         if (it == null) {
             throw Throwable(message = "Imeshindwa fungua akaunti, jaribu tena")
         } else {
-//            Log.e("FCM TOKEN", it)
+            Log.e("FCM TOKEN", it)
             return@withContext it
         }
     }
@@ -58,11 +45,12 @@ suspend fun getFcmToken(): String {
 
 @SuppressLint("HardwareIds")
 suspend fun getDeviceId(contentResolver: ContentResolver): String {
-    return withContext(Dispatchers.IO){
+    return withContext(Dispatchers.IO) {
         var id = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-//    Log.e("DEVICE", id)
+//        Log.e("USE android D.Id", id)
         if (id == null) {
             id = UUID.randomUUID().toString()
+//            Log.e("USE UUID D.Id", id)
         }
         return@withContext stringToSHA256(id)
     }

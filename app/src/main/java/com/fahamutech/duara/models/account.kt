@@ -1,34 +1,41 @@
 package com.fahamutech.duara.models
 
-import io.realm.RealmObject
-import io.realm.annotations.PrimaryKey
+import androidx.room.Embedded
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-open class PrivModel : RealmObject() {
-    var x = ""
-    var crv = ""
-    var d = ""
-    var kty = ""
-}
 
-open class PubModel : RealmObject() {
-    var x = ""
-    var crv = ""
-    var kty = ""
-}
+class PrivModel(
+    var kid: String = "",
+    var x: String = "",
+    var y: String = "",
+    var crv: String = "",
+    var d: String = "",
+    var kty: String = "",
+)
 
-class IdentityModel {
-    var did = ""
+class PubModel(
+    var kid: String = "",
+    var x: String = "",
+    var y: String = "",
+    var crv: String = "",
+    var kty: String = ""
+)
+
+open class IdentityModel {
     var priv = PrivModel()
     var pub = PubModel()
 }
 
-open class UserModel : RealmObject() {
+@Entity(tableName = "user")
+data class UserModel(
     @PrimaryKey
-    var id = "duara_user"
-    var nickname = ""
-    var token = ""
-    var picture = ""
-    var did = ""
-    var pub: PubModel? = PubModel()
+    var id: String = "duara_user",
+    var nickname: String = "",
+    var token: String = "",
+    var picture: String = "",
+    @Embedded(prefix = "pub_")
+    var pub: PubModel? = PubModel(),
+    @Embedded(prefix = "priv_")
     var priv: PrivModel? = PrivModel()
-}
+)

@@ -1,89 +1,49 @@
 package com.fahamutech.duara.components
 
 import android.content.Context
-import androidx.compose.foundation.*
+import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.sharp.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.fahamutech.duara.R
 import com.fahamutech.duara.models.Maongezi
+import com.fahamutech.duara.models.Message
+import com.fahamutech.duara.models.MessageStatus
 import com.fahamutech.duara.services.DuaraStorage
 import com.fahamutech.duara.states.MaongeziState
 import com.fahamutech.duara.ui.theme.DuaraGreen
 import com.fahamutech.duara.utils.timeAgo
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
-@Composable
-fun MaongeziTopBar() {
-    TopAppBar {
-        Text(
-            text = "Maongezi",
-            fontSize = 24.sp,
-            fontWeight = FontWeight(500),
-            lineHeight = 36.sp,
-            modifier = Modifier.absolutePadding(16.dp)
-        )
-    }
-}
-
-@Composable
-fun MaongeziMapyaFAB(navController: NavController) {
-    FloatingActionButton(
-        onClick = {
-            navController.navigate("maduara") {
-                launchSingleTop = true
-            }
-        },
-        backgroundColor = DuaraGreen
-    ) {
-        Icon(Icons.Sharp.Add, contentDescription = "maongezi mapya")
-    }
-}
-
+@ExperimentalMaterialApi
 @ExperimentalFoundationApi
 @Composable
-fun ListYaMaongeziYote(
-    maongezi: List<Maongezi>, maongeziState: MaongeziState, navController: NavController,
-    context: Context
-) {
-    val st = rememberLazyListState()
-    LazyColumn(
-        contentPadding = PaddingValues(horizontal = 0.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.fillMaxWidth(),
-        state = st
-    ) {
-        items(maongezi) { ongezi ->
-            OngeziItem(ongezi, maongeziState, navController, context)
-        }
-    }
-}
-
-@ExperimentalFoundationApi
-@Composable
-private fun OngeziItem(
+fun MaongeziItem(
     maongezi: Maongezi,
     maongeziState: MaongeziState,
     navController: NavController,
     context: Context
 ) {
     val scope = rememberCoroutineScope()
-    var message by remember { mutableStateOf("") }
+    var message by remember { mutableStateOf<Message?>(null) }
+    var totalUnread by remember { mutableStateOf<Int?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
@@ -105,7 +65,7 @@ private fun OngeziItem(
             modifier = Modifier.absolutePadding(6.dp, 8.dp, 16.dp, 8.dp),
         ) {
             OngeziItemNameAndTime(maongezi)
-            OngeziItemLastMessage(message)
+            OngeziItemLastMessage(message, totalUnread)
         }
     }
     ShowDeleteConversationDialog(showDeleteDialog) {
@@ -122,10 +82,22 @@ private fun OngeziItem(
             }
         }
     }
-    LaunchedEffect(maongezi.id) {
-        scope.launch {
-            val storage = DuaraStorage.getInstance(context)
-            message = storage.message().maongeziLastMessage(maongezi.id)?.content ?: ""
+    DisposableEffect(maongezi.id) {
+        val storage = DuaraStorage.getInstance(context)
+        val sc = scope.launch {
+            storage.message().maongeziLastMessage(maongezi.id).distinctUntilChanged().collect {
+                message = it
+            }
+        }
+        val st = scope.launch {
+            storage.message().maongeziUnreadMessage(maongezi.id).distinctUntilChanged().collect {
+//                Log.e("TOTAL UN", it.toString())
+                totalUnread = it
+            }
+        }
+        onDispose {
+            sc.cancel()
+            st.cancel()
         }
     }
 }
@@ -154,17 +126,41 @@ private fun ShowDeleteConversationDialog(
     }
 }
 
+@ExperimentalMaterialApi
 @Composable
-private fun OngeziItemLastMessage(message: String) {
-    Text(
-        text = message,
-        fontWeight = FontWeight(300),
-        fontSize = 13.sp,
-        color = Color(0xFF747272),
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-        modifier = Modifier.absolutePadding(0.dp, 0.dp, 48.dp, 0.dp)
-    )
+private fun OngeziItemLastMessage(message: Message?, totalUnread: Int?) {
+    val text = message?.content ?: ""
+    val fw = if (message?.status ?: "" == MessageStatus.UNREAD.toString()) {
+        500
+    } else 300
+    Row {
+        Text(
+            text = text,
+            fontWeight = FontWeight(fw),
+            fontSize = 13.sp,
+            color = Color(0xFF747272),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.absolutePadding(0.dp, 0.dp, 48.dp, 0.dp)
+        )
+        Spacer(modifier = Modifier.weight(1.0f))
+        if (totalUnread != 0 && totalUnread != null) Box(
+            modifier = Modifier
+                .padding(4.dp)
+                .defaultMinSize(20.dp)
+                .clip(CircleShape)
+                .background(DuaraGreen),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = totalUnread?.toString() ?: "",
+                color = Color.White,
+                fontWeight = FontWeight(400),
+                fontSize = 14.sp,
+                modifier = Modifier.absolutePadding(4.dp, 1.dp, 4.dp, 1.dp)
+            )
+        }
+    }
 }
 
 @Composable
@@ -193,7 +189,7 @@ private fun OngeziItemPicture(maongezi: Maongezi) {
         modifier = Modifier.absolutePadding(16.dp, 8.dp, 0.dp, 8.dp)
     ) {
         Image(
-            painter = painterResource(id = R.drawable.ic_list_item_bg),
+            painter = painterResource(id = com.fahamutech.duara.R.drawable.ic_list_item_bg),
             contentDescription = "profile picture",
             modifier = Modifier.size(44.dp)
         )
@@ -205,39 +201,3 @@ private fun OngeziItemPicture(maongezi: Maongezi) {
         )
     }
 }
-
-
-@Composable
-fun HamnaMaongezi() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Row(
-            modifier = Modifier.size(100.dp)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.duaralogo),
-                contentDescription = "hamna"
-            )
-        }
-        Text(
-            "Bado hauna maongezi na mtu, " +
-                    "bofya apo chini kulia kuanzisha maongezi mapya.",
-            modifier = Modifier.absolutePadding(24.dp, 0.dp, 24.dp, 0.dp),
-            fontWeight = FontWeight(300),
-            color = Color(0xFF989898),
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-
-
-
-
-

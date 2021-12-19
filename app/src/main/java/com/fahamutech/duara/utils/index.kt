@@ -106,6 +106,8 @@ fun timeAgo(dateString: String): String {
             .replace("ago", "")
             .replace("hours", "h")
             .replace("hour", "h")
+            .replace("days", "d")
+            .replace("day", "d")
             .replace("minutes", "min")
             .replace("minute", "min")
             .replace("yesterday", "Jana")

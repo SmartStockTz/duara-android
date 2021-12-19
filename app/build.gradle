@@ -12,8 +12,8 @@ android {
         applicationId "com.fahamutech.duara"
         minSdk 21
         targetSdk 31
-        versionCode 4
-        versionName "2021.12.16-build.4-beta.0"
+        versionCode 5
+        versionName "2021.12.18-build.5-beta.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -90,6 +90,9 @@ dependencies {
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
+
+    implementation "com.github.skydoves:landscapist-glide:1.4.4"
+
 
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

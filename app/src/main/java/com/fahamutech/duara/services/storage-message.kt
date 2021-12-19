@@ -22,7 +22,16 @@ interface MessageStorage {
     fun maongeziMessagesLive(ongeziId: String): Flow<List<Message>>
 
     @Query("select * from message where maongezi_id is (:ongeziId) order by date DESC limit 1")
-    suspend fun maongeziLastMessage(ongeziId: String): Message?
+    fun maongeziLastMessage(ongeziId: String): Flow<Message?>
+
+    @Query("select count(status) from message where status='UNREAD' and maongezi_id=(:ongeziId)")
+    fun maongeziUnreadMessage(ongeziId: String): Flow<Int?>
+
+    @Query("select count(status) from message where status='UNREAD'")
+    fun totalUnread(): Flow<Int?>
+
+    @Query("update message set status='READ' where maongezi_id=(:ongeziId)")
+    suspend fun markAllRead(ongeziId: String)
 
     @Query("delete from message where maongezi_id is (:ongeziId)")
     suspend fun deleteMaongeziMessages(ongeziId: String)

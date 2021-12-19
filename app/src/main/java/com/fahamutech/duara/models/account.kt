@@ -39,3 +39,30 @@ data class UserModel(
     @Embedded(prefix = "priv_")
     var priv: PrivModel? = PrivModel()
 )
+
+
+class XY(
+    var x: String? = null,
+    var y: String? = null
+)
+
+class UpdatePictureRequest(
+    var xy: XY? = null,
+    var url: String? = null
+)
+
+class UpdateNicknameRequest(
+    var xy: XY? = null,
+    var name: String? = null
+)
+
+class UpdateTokenRequest(
+    var xy: XY? = null,
+    var token: String? = null
+)
+
+
+
+
+
+

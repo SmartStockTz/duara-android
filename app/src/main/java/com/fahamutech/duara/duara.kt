@@ -1,6 +1,5 @@
 package com.fahamutech.duara
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,10 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import com.fahamutech.duara.pages.JiungePage
-import com.fahamutech.duara.pages.MaduaraPage
-import com.fahamutech.duara.pages.MaongeziPage
-import com.fahamutech.duara.pages.OngeziPage
+import com.fahamutech.duara.pages.*
 import com.fahamutech.duara.ui.theme.DuaraTheme
 import com.fahamutech.duara.workers.startPeriodicalRetrieveMessageWorker
 import com.fahamutech.duara.workers.startPeriodicalSendMessageWorker
@@ -34,7 +30,6 @@ class DuaraApp : ComponentActivity() {
         setContent { DuaraApp(this) }
     }
 }
-
 
 
 @ExperimentalFoundationApi
@@ -60,8 +55,7 @@ fun DuaraApp(activity: ComponentActivity) {
                     "maongezi/{id}",
                     arguments = listOf(navArgument("id") { type = NavType.StringType }),
                     deepLinks = listOf(navDeepLink {
-                        val uri = "https://duaratz.web.app/maongezi"
-                        uriPattern = "$uri/{id}"
+                        uriPattern = "https://duaratz.web.app/maongezi/{id}"
                     })
                 ) {
                     OngeziPage(
@@ -72,6 +66,12 @@ fun DuaraApp(activity: ComponentActivity) {
                 }
                 composable("maduara") {
                     MaduaraPage(
+                        navController = navController,
+                        context = activity
+                    )
+                }
+                composable("ukurasa") {
+                    UkurasaPage(
                         navController = navController,
                         context = activity
                     )

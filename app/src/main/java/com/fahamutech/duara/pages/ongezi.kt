@@ -42,6 +42,7 @@ fun OngeziPage(
             if (a != null && user !== null) {
                 ongezi = a
                 ongeziState.fetchMessage(ongezi?.id?:"na", context)
+                storage.message().markAllRead(ongezi?.id?:"na")
             } else {
                 navController.popBackStack()
                 messageToApp("Imeshindwa jua unaetaka ongea nae", context)

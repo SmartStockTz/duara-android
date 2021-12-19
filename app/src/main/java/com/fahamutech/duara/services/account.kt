@@ -5,6 +5,9 @@ import android.content.ContentResolver
 import android.content.Context
 import android.provider.Settings
 import android.util.Log
+import com.fahamutech.duara.models.UpdateNicknameRequest
+import com.fahamutech.duara.models.UpdatePictureRequest
+import com.fahamutech.duara.models.UploadFileResponse
 import com.fahamutech.duara.models.UserModel
 import com.fahamutech.duara.utils.generateKeyPair
 import com.fahamutech.duara.utils.stringToSHA256
@@ -12,7 +15,25 @@ import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import okhttp3.MultipartBody
+import retrofit2.Call
+import retrofit2.http.Body
+import retrofit2.http.Multipart
+import retrofit2.http.POST
+import retrofit2.http.Part
 import java.util.*
+
+interface AccountFunctions {
+    @Multipart
+    @POST("/account/picture/upload")
+    fun uploadPicture(@Part body: MultipartBody.Part): Call<UploadFileResponse>
+    @POST("/account/picture")
+    fun updatePicture(@Body data: UpdatePictureRequest): Call<String>
+    @POST("/account/nickname")
+    fun updateNickname(@Body data: UpdateNicknameRequest): Call<String>
+    @POST("/account/token")
+    fun updateToken(@Body data: UpdateNicknameRequest): Call<String>
+}
 
 suspend fun getIdentity(nickname: String, context: Context): UserModel {
     return withContext(Dispatchers.IO) {
@@ -47,11 +68,17 @@ suspend fun getFcmToken(): String {
 suspend fun getDeviceId(contentResolver: ContentResolver): String {
     return withContext(Dispatchers.IO) {
         var id = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-//        Log.e("USE android D.Id", id)
         if (id == null) {
             id = UUID.randomUUID().toString()
-//            Log.e("USE UUID D.Id", id)
         }
         return@withContext stringToSHA256(id)
     }
 }
+
+
+
+
+
+
+
+

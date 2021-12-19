@@ -1,31 +1,9 @@
 package com.fahamutech.duara.workers
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.PendingIntent.getActivity
 import android.content.Context
-import android.content.Context.NOTIFICATION_SERVICE
-import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-import android.graphics.Color.GREEN
-import android.media.AudioAttributes
-import android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION
-import android.media.AudioAttributes.USAGE_NOTIFICATION_RINGTONE
-import android.media.RingtoneManager.TYPE_NOTIFICATION
-import android.media.RingtoneManager.getDefaultUri
-import android.os.Build
-import android.os.Build.VERSION.SDK_INT
-import android.os.Build.VERSION_CODES.O
 import android.util.Log
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationCompat.DEFAULT_ALL
-import androidx.core.app.NotificationCompat.PRIORITY_MAX
 import androidx.room.withTransaction
 import androidx.work.*
-import com.fahamutech.duara.DuaraApp
-import com.fahamutech.duara.R
 import com.fahamutech.duara.models.*
 import com.fahamutech.duara.services.*
 import com.fahamutech.duara.utils.decryptMessage
@@ -34,7 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.math.roundToInt
 
 class ReceiveMessagesWorker(context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
@@ -111,6 +88,7 @@ private suspend fun handleNewMessage(
         } else {
             storage.withTransaction {
                 storage.message().save(messageDecrypted)
+                storage.maongezi().updateOngeziLastSeen(mid)
                 storage.messageCid().delete(message.cid ?: "")
             }
         }

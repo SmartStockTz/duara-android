@@ -8,13 +8,14 @@ import com.fahamutech.duara.models.Message
 import com.fahamutech.duara.models.Maongezi
 import com.fahamutech.duara.utils.stringFromDate
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import java.util.*
 
 @Dao
 interface MaongeziStorage {
     @Query("select * from maongezi order by date DESC")
-    suspend fun getMaongezi(): List<Maongezi>
+    fun getMaongezi(): Flow<List<Maongezi>>
 
     @Query("select * from maongezi where id is (:id)")
     suspend fun getOngeziInStore(id: String): Maongezi?
@@ -23,7 +24,7 @@ interface MaongeziStorage {
     suspend fun saveOngezi(maongezi: Maongezi)
 
     @Query("update maongezi set date=(:date) where id is (:ongeziId)")
-    suspend fun updateOngeziLastSeen(ongeziId: String, date: String)
+    suspend fun updateOngeziLastSeen(ongeziId: String, date: String = stringFromDate(Date()))
 
     @Query("delete from maongezi where id is (:id)")
     suspend fun futaOngeziInStore(id: String)

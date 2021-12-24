@@ -1,16 +1,23 @@
 package com.fahamutech.duara.components
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -20,6 +27,8 @@ import com.fahamutech.duara.R
 import com.fahamutech.duara.models.DuaraRemote
 import com.fahamutech.duara.models.Maongezi
 import com.fahamutech.duara.services.DuaraStorage
+import com.fahamutech.duara.utils.baseUrl
+import com.skydoves.landscapist.coil.CoilImage
 import kotlinx.coroutines.launch
 
 //
@@ -61,17 +70,23 @@ fun DuaraMemberItem(duaraRemoteLocal: DuaraRemote, navController: NavController,
             contentAlignment = Alignment.Center,
             modifier = Modifier.absolutePadding(11.dp, 0.dp, 11.dp, 8.dp)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_member_duara),
+            val imageUrl = duaraRemoteLocal.picture
+            CoilImage(
+                imageModel = imageUrl,
                 contentDescription = "profile_pic",
-                modifier = Modifier.size(80.dp)
+                contentScale = ContentScale.Crop,
+                placeHolder = ImageVector.vectorResource(id = R.drawable.ic_member_duara),
+                error = ImageVector.vectorResource(id = R.drawable.ic_member_duara),
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(CircleShape.copy(CornerSize(20.dp))),
             )
-            Text(
-                text = duaraRemoteLocal.nickname[0].toString(),
-                fontWeight = FontWeight(500),
-                color = Color.White,
-                fontSize = 24.sp
-            )
+//            Text(
+//                text = duaraRemoteLocal.nickname[0].toString(),
+//                fontWeight = FontWeight(500),
+//                color = Color.White,
+//                fontSize = 24.sp
+//            )
         }
         Text(
             text = duaraRemoteLocal.nickname,
@@ -80,6 +95,7 @@ fun DuaraMemberItem(duaraRemoteLocal: DuaraRemote, navController: NavController,
             fontSize = 14.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
+                .absolutePadding(0.dp,0.dp,0.dp,8.dp)
         )
     }
 }

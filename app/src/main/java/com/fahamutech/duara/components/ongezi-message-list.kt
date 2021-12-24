@@ -1,12 +1,11 @@
 package com.fahamutech.duara.components
 
-import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -14,10 +13,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.buildAnnotatedString
@@ -29,6 +31,8 @@ import androidx.compose.ui.unit.sp
 import com.fahamutech.duara.R
 import com.fahamutech.duara.models.Message
 import com.fahamutech.duara.models.UserModel
+import com.fahamutech.duara.utils.baseUrl
+import com.skydoves.landscapist.coil.CoilImage
 import java.util.regex.Pattern
 
 
@@ -82,12 +86,17 @@ private fun MessageListItemReceive(hideOwner: Boolean, message: Message) {
         modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
     ) {
         if (!hideOwner) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_message_sender_bg),
-                contentDescription = "picture",
+            val imageUrl =
+                "$baseUrl/account/picture/${message.sender_pubkey?.x}/${message.sender_pubkey?.y}"
+            CoilImage(
+                imageModel = imageUrl,
+                contentScale = ContentScale.Crop,
+                placeHolder = ImageVector.vectorResource(id = R.drawable.ic_message_sender_bg),
+                error = ImageVector.vectorResource(id = R.drawable.ic_message_sender_bg),
                 modifier = Modifier
-                    .absolutePadding(0.dp, 16.dp, 0.dp, 0.dp)
                     .size(30.dp)
+                    .clip(CircleShape)
+//                    .absolutePadding(0.dp, 16.dp, 0.dp, 0.dp),
             )
         }
         Column(
@@ -100,7 +109,7 @@ private fun MessageListItemReceive(hideOwner: Boolean, message: Message) {
                     fontSize = 14.sp,
                     lineHeight = 16.sp,
                     color = Color(0xFF747474),
-                    modifier = Modifier.absolutePadding(0.dp, 16.dp, 0.dp, 4.dp)
+                    modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
                 )
             }
             SelectionContainer {
@@ -116,12 +125,17 @@ private fun MessageListItemSent(hideOwner: Boolean, message: Message) {
         modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
     ) {
         if (!hideOwner) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_list_item_bg),
-                contentDescription = "picture",
+            val imageUrl =
+                "$baseUrl/account/picture/${message.sender_pubkey?.x}/${message.sender_pubkey?.y}"
+            CoilImage(
+                imageModel = imageUrl,
+                contentScale = ContentScale.Crop,
+                placeHolder = ImageVector.vectorResource(id = R.drawable.ic_list_item_bg),
+                error = ImageVector.vectorResource(id = R.drawable.ic_list_item_bg),
                 modifier = Modifier
-                    .absolutePadding(0.dp, 16.dp, 0.dp, 0.dp)
                     .size(30.dp)
+                    .clip(CircleShape)
+//                    .absolutePadding(0.dp, 16.dp, 0.dp, 0.dp),
             )
         }
         Column(
@@ -134,7 +148,7 @@ private fun MessageListItemSent(hideOwner: Boolean, message: Message) {
                     fontSize = 14.sp,
                     lineHeight = 16.sp,
                     color = Color(0xFF747474),
-                    modifier = Modifier.absolutePadding(0.dp, 16.dp, 0.dp, 4.dp)
+                    modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
                 )
             }
             SelectionContainer {
@@ -155,7 +169,7 @@ private fun MessageListTimeStamp(date: String) {
         textAlign = TextAlign.Center,
         modifier = Modifier
             .fillMaxWidth()
-            .absolutePadding(0.dp, 8.dp, 0.dp, 0.dp),
+            .absolutePadding(0.dp, 8.dp, 0.dp, 16.dp),
     )
 }
 

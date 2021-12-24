@@ -59,7 +59,7 @@ fun stringToSHA256(data: String): String {
 }
 
 fun messageToApp(message: String, context: Context) {
-    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 }
 
 suspend fun withTryCatch(run: suspend () -> Unit, onError: (message: String) -> Unit) {

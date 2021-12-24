@@ -12,7 +12,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun DuaraWelcomeText(){
     Text(
-        text = "Karibu jaza jina apo chini, kisha bofya neno jiunge.",
+        text = "Karibu jaza jina apo chini na picha apo juu," +
+                " kisha bofya neno jiunge.",
         modifier = Modifier.absolutePadding(40.dp,8.dp,24.dp,0.dp),
         fontWeight = FontWeight(300),
         fontSize = 16.sp,

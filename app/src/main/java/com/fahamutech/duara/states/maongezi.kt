@@ -17,18 +17,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MaongeziState : ViewModel() {
-//    private val _maongezi = MutableLiveData<List<Maongezi>>(null)
-//    val maongezi: LiveData<List<Maongezi>> = _maongezi
-//    fun fetchMaongezi(context: Context) {
-//        val storage = DuaraStorage.getInstance(context)
-//        viewModelScope.launch {
-//            val m = storage.maongezi().getMaongezi().collect {
-//
-//            }
-//            _maongezi.value = m
-//        }
-//    }
-
     fun futaOngezi(maongezi: Maongezi, context: Context) {
         viewModelScope.launch {
             val storage = DuaraStorage.getInstance(context)

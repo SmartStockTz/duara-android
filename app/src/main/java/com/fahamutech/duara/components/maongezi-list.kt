@@ -41,8 +41,7 @@ fun MaongeziList(
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 0.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.fillMaxWidth()
-            .absolutePadding(0.dp,0.dp,0.dp,100.dp),
+        modifier = Modifier.fillMaxWidth(),
         state = st
     ) {
         items(maongezi) { ongezi ->

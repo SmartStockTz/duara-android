@@ -35,14 +35,14 @@ interface AccountFunctions {
     fun updateToken(@Body data: UpdateNicknameRequest): Call<String>
 }
 
-suspend fun getIdentity(nickname: String, context: Context): UserModel {
+suspend fun getIdentity(nickname: String, image: String, context: Context): UserModel {
     return withContext(Dispatchers.IO) {
         val storage = DuaraStorage.getInstance(context)
         val identityModel = generateKeyPair()
         val token = getFcmToken()
         val user = UserModel(
             nickname = nickname,
-            picture = "",
+            picture = image,
             priv = identityModel.priv,
             pub = identityModel.pub,
             token = token

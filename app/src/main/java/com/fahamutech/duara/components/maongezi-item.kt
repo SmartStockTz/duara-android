@@ -3,31 +3,37 @@ package com.fahamutech.duara.components
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.*
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.fahamutech.duara.R
 import com.fahamutech.duara.models.Maongezi
 import com.fahamutech.duara.models.Message
 import com.fahamutech.duara.models.MessageStatus
 import com.fahamutech.duara.services.DuaraStorage
 import com.fahamutech.duara.states.MaongeziState
 import com.fahamutech.duara.ui.theme.DuaraGreen
+import com.fahamutech.duara.utils.baseUrl
 import com.fahamutech.duara.utils.timeAgo
+import com.skydoves.landscapist.coil.CoilImage
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -90,7 +96,7 @@ fun MaongeziItem(
             }
         }
         val st = scope.launch {
-            storage.message().maongeziUnreadMessage(maongezi.id).distinctUntilChanged().collect {
+            storage.message().maongeziUnreadMessage(maongezi.id).collect {
 //                Log.e("TOTAL UN", it.toString())
                 totalUnread = it
             }
@@ -153,7 +159,7 @@ private fun OngeziItemLastMessage(message: Message?, totalUnread: Int?) {
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = totalUnread?.toString() ?: "",
+                text = totalUnread.toString(),
                 color = Color.White,
                 fontWeight = FontWeight(400),
                 fontSize = 14.sp,
@@ -188,16 +194,22 @@ private fun OngeziItemPicture(maongezi: Maongezi) {
         contentAlignment = Alignment.Center,
         modifier = Modifier.absolutePadding(16.dp, 8.dp, 0.dp, 8.dp)
     ) {
-        Image(
-            painter = painterResource(id = com.fahamutech.duara.R.drawable.ic_list_item_bg),
-            contentDescription = "profile picture",
-            modifier = Modifier.size(44.dp)
+        val imageUrl =
+            "$baseUrl/account/picture/${maongezi.receiver_pubkey?.x}/${maongezi.receiver_pubkey?.y}"
+        CoilImage(
+            imageModel = imageUrl,
+            contentScale = ContentScale.Crop,
+            placeHolder = ImageVector.vectorResource(id = R.drawable.ic_list_item_bg),
+            error = ImageVector.vectorResource(id = R.drawable.ic_list_item_bg),
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape),
         )
-        Text(
-            text = maongezi.receiver_nickname[0].toString(),
-            fontWeight = FontWeight(400),
-            color = Color.White,
-            fontSize = 16.sp
-        )
+//        Text(
+//            text = maongezi.receiver_nickname[0].toString(),
+//            fontWeight = FontWeight(400),
+//            color = Color.White,
+//            fontSize = 16.sp
+//        )
     }
 }

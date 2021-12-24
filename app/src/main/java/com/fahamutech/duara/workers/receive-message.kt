@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.room.withTransaction
 import androidx.work.*
+import com.fahamutech.duara.VISIBILITY
 import com.fahamutech.duara.models.*
 import com.fahamutech.duara.services.*
 import com.fahamutech.duara.utils.decryptMessage
@@ -92,7 +93,9 @@ private suspend fun handleNewMessage(
                 storage.messageCid().delete(message.cid ?: "")
             }
         }
-        showMessageNotification(context, messageDecrypted)
+        if (VISIBILITY.IS_VISIBLE){
+            playMessageSound(context)
+        }else showMessageNotification(context, messageDecrypted)
     } catch (e: Throwable) {
         Log.e("Handle message", e.toString())
         throw e

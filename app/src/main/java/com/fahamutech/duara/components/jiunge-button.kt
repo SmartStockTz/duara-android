@@ -1,7 +1,7 @@
 package com.fahamutech.duara.components
 
 import android.app.Activity
-import android.util.Log
+import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +20,12 @@ import androidx.navigation.NavController
 import com.fahamutech.duara.states.JiungeState
 
 @Composable
-fun JiungeButton(jiungeState: JiungeState, navController: NavController, context: Activity) {
+fun JiungeButton(
+    imageUri: Uri?,
+    jiungeState: JiungeState,
+    navController: NavController,
+    context: Activity
+) {
     val onFetching by jiungeState.getIdentityProgress.observeAsState()
     Box(
         modifier = Modifier
@@ -29,7 +34,7 @@ fun JiungeButton(jiungeState: JiungeState, navController: NavController, context
     ) {
         Button(
             onClick = {
-                jiungeState.jiunge(context) {
+                jiungeState.jiunge(imageUri,context) {
                     navController.navigate("maongezi") {
                         popUpTo(0) {
                             inclusive = true

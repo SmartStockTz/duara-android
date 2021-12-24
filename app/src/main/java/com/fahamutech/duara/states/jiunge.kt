@@ -2,16 +2,17 @@ package com.fahamutech.duara.states
 
 import android.app.Activity
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fahamutech.duara.models.UserModel
 import com.fahamutech.duara.services.DuaraStorage
-import com.fahamutech.duara.services.ensureContactPermission
 import com.fahamutech.duara.services.getIdentity
 import com.fahamutech.duara.utils.messageToApp
 import com.fahamutech.duara.utils.withTryCatch
+import com.fahamutech.duara.workers.startUploadAndUpdateProfilePicture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -28,23 +29,29 @@ class JiungeState : ViewModel() {
         _nickname.value = value
     }
 
-    fun jiunge(context: Activity, onFinish: () -> Unit) {
+    fun jiunge(imageUri: Uri?, context: Activity, onFinish: () -> Unit) {
         val n = nickname.value
+        if (imageUri == null) {
+            messageToApp("Bofya ilo boksi apo juu kuweka picha", context);
+            return
+        }
         if (n != null) {
             if (n.isEmpty().or(n.length < 3)) {
                 messageToApp("Jina linatakiwa liwe angalau herudi 3", context)
             } else {
-                ensureContactPermission(context) {
-                    _getIdentityProgress.value = true
-                    viewModelScope.launch(Dispatchers.Main) {
-                        withTryCatch(run = {
-                            val u = getIdentity(nickname.value!!, context)
-                            _user.value = u
-                            onFinish()
-                            _getIdentityProgress.value = false
-                        }) {
-                            messageToApp(it, context)
-                        }
+                _getIdentityProgress.value = true
+                viewModelScope.launch(Dispatchers.Main) {
+                    withTryCatch(run = {
+                        val cR = context.contentResolver
+                        val type = cR.getType(imageUri)
+                        val path = imageUri.toString()
+                        val u = getIdentity(nickname.value!!, "", context)
+                        _user.value = u
+                        startUploadAndUpdateProfilePicture(path, type, context)
+                        onFinish()
+                        _getIdentityProgress.value = false
+                    }) {
+                        messageToApp(it, context)
                     }
                 }
             }

@@ -174,6 +174,9 @@ suspend fun syncContacts(context: Context): MutableList<DuaraRemote> {
                 storage.maduara().deleteAll()
                 storage.maduara().saveMaduara(maduara)
             }
+//            maduara.toMutableList().sortBy {
+//                it.nickname
+//            }
             maduara.toMutableList()
         } else mutableListOf()
     }

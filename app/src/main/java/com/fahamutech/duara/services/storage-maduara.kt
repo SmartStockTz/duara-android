@@ -13,7 +13,7 @@ interface MaduaraStorage {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveMaduara(maduara: List<DuaraRemote>)
 
-    @Query("select * from maduara")
+    @Query("select * from maduara order by nickname ASC")
     suspend fun getMaduara(): MutableList<DuaraRemote>
     @Query("delete from maduara")
     fun deleteAll()

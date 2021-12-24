@@ -9,6 +9,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.media.AudioAttributes
 import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -84,4 +85,10 @@ fun showMessageNotification(context: Context, message: Message) {
     with(NotificationManagerCompat.from(context)) {
         notify(maongeziId, RECEIVE_MESSAGE_NOTIFICATION_ID, notificationBuilder.build())
     }
+}
+
+fun playMessageSound(context: Context) {
+    val notification: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+    val r = RingtoneManager.getRingtone(context, notification)
+    r.play()
 }

@@ -1,50 +1,40 @@
 package com.fahamutech.duara.components
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.ImageDecoder
 import android.net.Uri
-import android.os.Build
-import android.provider.MediaStore
 import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CornerSize
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.absolutePadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Divider
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
+import com.canhub.cropper.CropImageContractOptions
+import com.canhub.cropper.CropImageView
+import com.canhub.cropper.options
 import com.fahamutech.duara.models.UserModel
-import com.fahamutech.duara.utils.messageToApp
 import com.fahamutech.duara.workers.startUploadAndUpdateProfilePicture
-import com.skydoves.landscapist.glide.GlideImage
 
 
 @Composable
@@ -55,7 +45,16 @@ fun UkurasaBody(user: UserModel) {
             .verticalScroll(ss)
             .absolutePadding(16.dp, 0.dp, 16.dp, 100.dp)
     ) {
-        UserImage(user)
+        UserImage(user) { uri: Uri?, context: Context ->
+            if (uri != null) {
+                val cR = context.contentResolver
+                val type = cR.getType(uri)
+                val path = uri.toString()
+                startUploadAndUpdateProfilePicture(path, type, context)
+            } else {
+                Log.e("NUL IMAGE URI", "****")
+            }
+        }
         Divider(color = Color(0xFFCCCCCC))
         UserName(user)
         Divider(color = Color(0xFFCCCCCC))
@@ -72,7 +71,7 @@ private fun UserName(user: UserModel) {
     val keyboardController = LocalSoftwareKeyboardController.current
     var nickname by remember { mutableStateOf(user.nickname) }
     Row {
-        var enabled by remember { mutableStateOf(false) }
+//        var enabled by remember { mutableStateOf(false) }
         Icon(
             Icons.Default.Person, contentDescription = "person",
             modifier = Modifier.absolutePadding(0.dp, 20.dp, 8.dp, 20.dp),
@@ -94,6 +93,7 @@ private fun UserName(user: UserModel) {
                 onValueChange = {
                     nickname = it
                 },
+                textStyle = TextStyle(color = Color.Gray),
                 enabled = false,
                 modifier = Modifier
                     .focusRequester(focusRequester)
@@ -103,7 +103,7 @@ private fun UserName(user: UserModel) {
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(
                     onDone = {
-                        enabled = false
+//                        enabled = false
                         updateName(nickname)
                         keyboardController?.hide()
                         focusManager.clearFocus(true)
@@ -133,109 +133,15 @@ private fun UserName(user: UserModel) {
     }
 }
 
-
-@Composable
-fun UserImage(user: UserModel) {
-    val context = LocalContext.current
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-    ) { uri: Uri? ->
-        imageUri = uri
-        uploadImage(uri, context)
-    }
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            imagePickerLauncher.launch("image/*")
-        } else {
-            messageToApp("Ruhusu kusoma picha ili iweze kuweka picha yako", context)
+fun cropImageStart(cropImage: ManagedActivityResultLauncher<CropImageContractOptions, CropImageView.CropResult>) {
+    cropImage.launch(
+        options {
+            setGuidelines(CropImageView.Guidelines.ON)
+            setAutoZoomEnabled(true)
+            setFixAspectRatio(true)
+            setAspectRatio(100, 100)
         }
-    }
-    val bitmap = remember { mutableStateOf<Bitmap?>(null) }
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .absolutePadding(0.dp, 8.dp, 0.dp, 24.dp)
-    ) {
-        Row(
-            modifier = Modifier.absolutePadding(0.dp, 8.dp)
-        ) {
-            Spacer(modifier = Modifier.weight(1.0f))
-            IconButton(onClick = {
-                when (PackageManager.PERMISSION_GRANTED) {
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.CAMERA
-                    ) -> {
-                        imagePickerLauncher.launch("image/*")
-                    }
-                    else -> {
-                        permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    }
-                }
-            }) {
-                Icon(
-                    Icons.Default.Edit,
-                    contentDescription = "edit_image",
-                    tint = Color(0xFF6D6D6D)
-                )
-            }
-        }
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .absolutePadding(0.dp, 0.dp, 0.dp, 20.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(150.dp)
-                    .clip(CircleShape.copy(CornerSize(26.dp)))
-                    .background(color = Color(0xFFC4C4C4))
-            ) {
-                if (bitmap.value != null) {
-                    Image(
-                        bitmap = bitmap.value!!.asImageBitmap(),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                }else{
-                    GlideImage(
-                        imageModel = user.picture
-                    )
-                }
-            }
-        }
-    }
-    imageUri?.let {
-        if (Build.VERSION.SDK_INT < 28) {
-            bitmap.value = MediaStore.Images
-                .Media.getBitmap(context.contentResolver, it)
-        } else {
-            val source = ImageDecoder
-                .createSource(context.contentResolver, it)
-            bitmap.value = ImageDecoder.decodeBitmap(source)
-        }
-    }
-}
-
-
-private fun uploadImage(uri: Uri?, context: Context) {
-    if (uri != null) {
-        val cR = context.contentResolver
-//        val mime = MimeTypeMap.getSingleton()
-        val type = cR.getType(uri)
-//        if (type != null) {
-//            Log.e("TAGA", type)
-//        }
-        val path = uri.toString()
-//        Log.e("TAG", "start upload task $path")
-        startUploadAndUpdateProfilePicture(path, type, context)
-    }
+    )
 }
 
 private fun updateName(name: String) {

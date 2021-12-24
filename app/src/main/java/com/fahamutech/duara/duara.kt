@@ -3,6 +3,7 @@ package com.fahamutech.duara
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -14,10 +15,15 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.fahamutech.duara.pages.*
+import com.fahamutech.duara.states.OngeziState
 import com.fahamutech.duara.ui.theme.DuaraTheme
 import com.fahamutech.duara.workers.startPeriodicalRetrieveMessageWorker
 import com.fahamutech.duara.workers.startPeriodicalSendMessageWorker
 import com.google.android.gms.common.GoogleApiAvailability
+
+object VISIBILITY {
+    var IS_VISIBLE = false
+}
 
 class DuaraApp : ComponentActivity() {
 
@@ -27,14 +33,25 @@ class DuaraApp : ComponentActivity() {
         GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(this)
         startPeriodicalSendMessageWorker(this)
         startPeriodicalRetrieveMessageWorker(this)
-        setContent { DuaraApp(this) }
+        val ongeziState by viewModels<OngeziState>()
+        setContent { DuaraApp(this, ongeziState) }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        VISIBILITY.IS_VISIBLE = true
+    }
+
+    override fun onPause() {
+        super.onPause()
+        VISIBILITY.IS_VISIBLE = false
     }
 }
 
 
 @ExperimentalFoundationApi
 @Composable
-fun DuaraApp(activity: ComponentActivity) {
+fun DuaraApp(activity: ComponentActivity, ongeziState: OngeziState) {
     val navController = rememberNavController()
     DuaraTheme {
         Surface(color = MaterialTheme.colors.background) {
@@ -61,7 +78,8 @@ fun DuaraApp(activity: ComponentActivity) {
                     OngeziPage(
                         id = it.arguments?.getString("id"),
                         navController = navController,
-                        context = activity
+                        context = activity,
+                        ongeziState = ongeziState
                     )
                 }
                 composable("maduara") {

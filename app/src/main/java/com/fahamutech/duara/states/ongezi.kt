@@ -20,6 +20,7 @@ import com.fahamutech.duara.utils.stringFromDate
 import com.fahamutech.duara.workers.startSendMessageWorker
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -33,24 +34,24 @@ class OngeziState : ViewModel() {
     fun fetchMessage(ongeziId: String, context: Context) {
         val storage = DuaraStorage.getInstance(context)
         messageListFlow = viewModelScope.launch {
-            storage.message().maongeziMessagesLive(ongeziId).collect {
-//                Log.e("MESSAGE LISTENER", it.size.toString())
+            storage.message().maongeziMessagesLive(ongeziId).distinctUntilChanged().collect {
                 clearNotification(ongeziId, context)
                 _messages.value = it.toMutableList()
             }
         }
     }
 
-    fun dispose(){
+    fun dispose(id: String, context: Context) {
         messageListFlow?.cancel()
         _messages.value = mutableListOf()
+        val storage = DuaraStorage.getInstance(context)
+        viewModelScope.launch {
+            storage.message().markAllRead(id)
+        }
     }
 
     private fun clearNotification(ongeziId: String, context: Context) {
-        NotificationManagerCompat.from(context).cancel(ongeziId, RECEIVE_MESSAGE_NOTIFICATION_ID)
-//        val notification: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-//        val r = RingtoneManager.getRingtone(context, notification)
-//        r.play()
+//        NotificationManagerCompat.from(context).cancel(ongeziId, RECEIVE_MESSAGE_NOTIFICATION_ID)
     }
 
 
@@ -79,9 +80,5 @@ class OngeziState : ViewModel() {
 //            _messages.value = (mutableListOf(messageLocal) + _messages.value!!).toMutableList()
             startSendMessageWorker(context)
         }
-    }
-
-    fun resetMessages() {
-        _messages.value = mutableListOf()
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.sharp.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -35,6 +36,7 @@ import com.fahamutech.duara.models.DuaraLocal
 import com.fahamutech.duara.models.DuaraRemote
 import com.fahamutech.duara.states.MaduaraState
 import com.fahamutech.duara.utils.duaraLocalToRemoteHash
+import com.fahamutech.duara.utils.shareApp
 
 @Composable
 fun MaduaraTopBar(
@@ -74,6 +76,11 @@ private fun TopBarNormal(
             modifier = Modifier.absolutePadding(16.dp)
         )
         Spacer(modifier = Modifier.weight(1.0f))
+        IconButton(onClick = {
+            shareApp(context)
+        }) {
+            Icon(Icons.Default.Share, contentDescription = "share")
+        }
         IconButton(onClick = {
             onSearchClick()
         }) {
@@ -146,7 +153,7 @@ private fun TopBarSearch(
 @Composable
 fun HelperMessage() {
     Text(
-        text = "Watu wenye namba za simu sawa na zako.",
+        text = "Marafiki wa rafiki zako.",
         fontWeight = FontWeight(300),
         fontSize = 14.sp,
         modifier = Modifier

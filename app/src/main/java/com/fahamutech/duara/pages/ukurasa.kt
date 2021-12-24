@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.*
 import androidx.navigation.NavController
+import com.canhub.cropper.CropImageView
+import com.canhub.cropper.options
 import com.fahamutech.duara.components.UkurasaBody
 import com.fahamutech.duara.components.UkurasaTopBar
 import com.fahamutech.duara.models.UserModel

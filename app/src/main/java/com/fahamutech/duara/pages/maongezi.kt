@@ -40,11 +40,9 @@ fun MaongeziPage(
             content = {
                 if (maongezi.value != null) {
                     if (maongezi.value!!.isEmpty()) {
-//                        Log.e("HAMNA MAONGEZI", "**********'")
                         MaongeziEmpty()
                     }
                     if (maongezi.value!!.isNotEmpty()) {
-//                        Log.e("YAPO MAONGEZI", "**********'")
                         MaongeziList(maongezi.value!!, maongeziState, navController, context)
                     }
                 }

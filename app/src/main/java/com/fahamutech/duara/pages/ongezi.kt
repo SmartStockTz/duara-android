@@ -1,6 +1,7 @@
 package com.fahamutech.duara.pages
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.*
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -17,7 +18,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun OngeziPage(
     id: String?,
-    ongeziState: OngeziState = viewModel(),
+    ongeziState: OngeziState,
     navController: NavController,
     context: Context
 ) {
@@ -32,9 +33,9 @@ fun OngeziPage(
             }
         )
     }
-    DisposableEffect(id) {
+    DisposableEffect(true) {
+        val storage = DuaraStorage.getInstance(context)
         scope.launch {
-            val storage = DuaraStorage.getInstance(context)
             val uDao = storage.user()
             val maongeziDao = storage.maongezi()
             user = uDao.getUser()
@@ -49,7 +50,7 @@ fun OngeziPage(
             }
         }
         onDispose {
-            ongeziState.dispose()
+            ongeziState.dispose(ongezi?.id?:"na", context)
         }
     }
 }

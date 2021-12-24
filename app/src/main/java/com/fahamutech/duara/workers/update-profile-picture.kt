@@ -31,31 +31,8 @@ class UploadProfilePictureWorker(context: Context, workerParameters: WorkerParam
             }
             val path = inputData.getString("path")
             val type = inputData.getString("type")
-            if (path != null && type != null) {
-                val uri = Uri.parse(path)
-                val bytes: ByteArray? = if (path.startsWith("content:")) {
-                    val istrm = applicationContext.contentResolver?.openInputStream(uri)
-                    istrm?.use {
-                        it.readBytes()
-                    }
-                } else {
-                    val a = FileInputStream(File(path))
-                    a.use {
-                        it.readBytes()
-                    }
-                }
-                if (bytes == null) {
-                    return@withContext Result.success()
-                }
-                val name = "picture." + type.split("/")[1]
-                val filePart = MultipartBody.Part.createFormData(
-                    name, name,
-                    RequestBody.create(MediaType.parse(type), bytes)
-                )
-                val call =
-                    getHttpClient(AccountFunctions::class.java).uploadPicture(filePart).await()
-                Result.success(workDataOf(Pair("url", baseUrl + call.urls[0])))
-            } else Result.success(workDataOf(Pair("url", null)))
+            val url = uploadImageToServer(path, type, applicationContext)
+            Result.success(workDataOf(Pair("url", url)))
         } catch (e: Exception) {
             Log.e("UPLOAD PICTURE ERROR", e.toString())
             Result.retry()
@@ -81,12 +58,10 @@ class UpdateProfilePictureUrlWorker(context: Context, workerParameters: WorkerPa
             )
             val call =
                 getHttpClient(AccountFunctions::class.java).updatePicture(updatePicture).await()
-//            Log.e("PICTURE URL", call)
             user.picture = call
             storage.withTransaction {
                 storage.user().saveUser(user)
             }
-//            messageToApp("Picha yako imefanikiwa kubadilishwa", applicationContext)
             Result.success()
         } catch (e: Exception) {
             Log.e("UPDATE PICTURE ERROR", e.toString())
@@ -129,7 +104,33 @@ private fun oneTimeUpdateWorker(): OneTimeWorkRequest {
         ).build()
 }
 
-
+suspend fun uploadImageToServer(path: String?, type: String?, context: Context): String? {
+    return if (path != null && type != null) {
+        val uri = Uri.parse(path)
+        val bytes: ByteArray? = if (path.startsWith("content:")) {
+            val istrm = context.contentResolver?.openInputStream(uri)
+            istrm?.use {
+                it.readBytes()
+            }
+        } else {
+            val a = FileInputStream(File(path))
+            a.use {
+                it.readBytes()
+            }
+        }
+        if (bytes == null) {
+            return null
+        }
+        val name = "picture." + type.split("/")[1]
+        val filePart = MultipartBody.Part.createFormData(
+            name, name,
+            RequestBody.create(MediaType.parse(type), bytes)
+        )
+        val call =
+            getHttpClient(AccountFunctions::class.java).uploadPicture(filePart).await()
+        return baseUrl + call.urls[0]
+    }else null
+}
 
 
 

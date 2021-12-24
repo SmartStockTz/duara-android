@@ -6,15 +6,15 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -23,6 +23,7 @@ import com.fahamutech.duara.models.DuaraRemote
 import com.fahamutech.duara.models.UserModel
 import com.fahamutech.duara.services.DuaraStorage
 import com.fahamutech.duara.states.MaduaraState
+import com.fahamutech.duara.utils.shareApp
 import kotlinx.coroutines.launch
 
 @ExperimentalFoundationApi

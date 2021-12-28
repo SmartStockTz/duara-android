@@ -4,3 +4,5 @@ install:
   - echo "Running a custom install command"
   - ./gradlew clean
   - ./gradlew :duaracore:build
+  - ./gradlew :duaracore:publishToMavenLocal
+  - ./gradlew :duaracore:publish

@@ -13,7 +13,7 @@ android {
         minSdk 21
         targetSdk 31
         versionCode 6
-        versionName "2021.12.24-build.6-beta.2"
+        versionName "2021.12.28-build.7-beta.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

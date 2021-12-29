@@ -26,14 +26,14 @@ fun MaongeziEmpty() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier.size(100.dp)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_duara_logo),
-                contentDescription = "hamna"
-            )
-        }
+//        Row(
+//            modifier = Modifier.size(100.dp)
+//        ) {
+//            Image(
+//                painter = painterResource(id = R.drawable.ic_duara_logo),
+//                contentDescription = "hamna"
+//            )
+//        }
         Text(
             "Bado hauna maongezi na mtu, " +
                     "bofya apo chini kulia kuanzisha maongezi mapya.",

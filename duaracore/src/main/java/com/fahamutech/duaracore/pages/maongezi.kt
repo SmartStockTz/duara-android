@@ -2,6 +2,7 @@ package com.fahamutech.duaracore.pages
 
 import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.*
@@ -39,13 +40,15 @@ fun MaongeziPage(
                 MaongeziMapyaFAB(navController)
             },
             content = {
-                hudumaList()
-                if (maongezi.value != null) {
-                    if (maongezi.value!!.isEmpty()) {
-                        MaongeziEmpty()
-                    }
-                    if (maongezi.value!!.isNotEmpty()) {
-                        MaongeziList(maongezi.value!!, maongeziState, navController, context)
+                Column {
+                    hudumaList()
+                    if (maongezi.value != null) {
+                        if (maongezi.value!!.isEmpty()) {
+                            MaongeziEmpty()
+                        }
+                        if (maongezi.value!!.isNotEmpty()) {
+                            MaongeziList(maongezi.value!!, maongeziState, navController, context)
+                        }
                     }
                 }
             }

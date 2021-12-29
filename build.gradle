@@ -3,7 +3,7 @@
 buildscript {
     ext {
         compose_version = '1.0.5'
-        versionName = "2021.12.28-build.10-beta.3"
+        versionName = "2021.12.28-build.11-beta.4"
     }
     repositories {
         google()

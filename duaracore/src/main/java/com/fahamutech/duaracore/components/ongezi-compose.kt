@@ -3,15 +3,18 @@ package com.fahamutech.duaracore.components
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
-import android.provider.DocumentsContract
 import android.util.Log
+import android.webkit.MimeTypeMap
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.sharp.Send
 import androidx.compose.runtime.*
@@ -29,19 +32,15 @@ import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageView
 import com.canhub.cropper.options
 import com.fahamutech.duaracore.R
-import com.fahamutech.duaracore.states.OngeziState
 import com.fahamutech.duaracore.models.Maongezi
 import com.fahamutech.duaracore.models.UserModel
+import com.fahamutech.duaracore.states.OngeziState
+import com.fahamutech.duaracore.utils.getFileChecksum
 import com.fahamutech.duaracore.utils.messageToApp
 import com.fahamutech.duaracore.utils.stringFromDate
-import java.util.*
-import android.webkit.MimeTypeMap
-import androidx.core.net.toFile
-import androidx.core.provider.DocumentsContractCompat
-import androidx.documentfile.provider.DocumentFile
-import com.fahamutech.duaracore.utils.getFileChecksum
 import java.io.*
 import java.security.MessageDigest
+import java.util.*
 
 
 @Composable
@@ -182,12 +181,12 @@ fun getImageStart(
 ) {
     cropImage.launch(
         options {
-            setGuidelines(CropImageView.Guidelines.ON)
+//            setGuidelines(CropImageView.Guidelines.ON)
             setAutoZoomEnabled(true)
-            setInitialCropWindowPaddingRatio(0.1f)
+            setInitialCropWindowPaddingRatio(0f)
             setOutputCompressQuality(60)
 //            setFixAspectRatio(true)
-//            setAspectRatio(100, 100)
+            setAspectRatio(16, 10)
             setImageSource(gallery, camera)
         }
     )

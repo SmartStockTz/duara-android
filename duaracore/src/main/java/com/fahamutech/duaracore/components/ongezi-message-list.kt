@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -34,6 +35,8 @@ import com.fahamutech.duaracore.utils.baseUrl
 import com.skydoves.landscapist.coil.CoilImage
 import java.util.regex.Pattern
 import com.fahamutech.duaracore.R
+import com.fahamutech.duaracore.models.MessageType
+import java.io.File
 
 
 @Composable
@@ -95,7 +98,7 @@ private fun MessageListItemReceive(hideOwner: Boolean, message: Message) {
                 error = ImageVector.vectorResource(id = R.drawable.ic_message_sender_bg),
                 modifier = Modifier
                     .size(30.dp)
-                    .clip(CircleShape)
+                    .clip(CircleShape),
 //                    .absolutePadding(0.dp, 16.dp, 0.dp, 0.dp),
             )
         }
@@ -112,7 +115,19 @@ private fun MessageListItemReceive(hideOwner: Boolean, message: Message) {
                     modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
                 )
             }
-            SelectionContainer {
+            if (message.type == MessageType.IMAGE.toString()) {
+                CoilImage(
+                    imageModel = File(message.content),
+                    contentScale = ContentScale.Crop,
+                    placeHolder = ImageVector.vectorResource(id = R.drawable.ic_image_placeholder),
+                    error = ImageVector.vectorResource(id = R.drawable.ic_image_placeholder_error),
+                    modifier = Modifier
+                        .widthIn(200.dp, 500.dp)
+                        .fillMaxWidth()
+                        .heightIn(78.dp,400.dp)
+                        .clip(CircleShape.copy(CornerSize(8.dp)))
+                )
+            } else SelectionContainer {
                 LinkifyText(text = message.content)
             }
         }
@@ -151,7 +166,18 @@ private fun MessageListItemSent(hideOwner: Boolean, message: Message) {
                     modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
                 )
             }
-            SelectionContainer {
+            if (message.type == MessageType.IMAGE.toString()) {
+                CoilImage(
+                    imageModel = File(message.content),
+                    placeHolder = ImageVector.vectorResource(id = R.drawable.ic_image_placeholder),
+                    error = ImageVector.vectorResource(id = R.drawable.ic_image_placeholder_error),
+                    modifier = Modifier
+                        .widthIn(0.dp, 500.dp)
+                        .fillMaxWidth()
+                        .heightIn(78.dp,250.dp)
+                        .clip(CircleShape.copy(CornerSize(8.dp)))
+                )
+            }else SelectionContainer {
                 LinkifyText(text = message.content)
             }
         }

@@ -2,21 +2,22 @@ package com.fahamutech.duaracore.services
 
 import com.fahamutech.duaracore.models.MessageRemote
 import com.fahamutech.duaracore.models.MessageRemoteResponse
+import com.fahamutech.duaracore.models.UploadFileResponse
 import com.fahamutech.duaracore.utils.baseUrlIpfs
 import com.fahamutech.duaracore.utils.getHttpClient
+import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.await
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Path
+import retrofit2.http.*
 
-private interface MessageFunctions {
+interface MessageFunctions {
     @POST("/message/send")
     fun send(@Body data: List<MessageRemote>): Call<List<MessageRemoteResponse>>
-
     @GET("/ipfs/{cid}")
     fun retrieve(@Path("cid") cid: String): Call<MessageRemote>
+    @Multipart
+    @POST("/storage/maduara")
+    fun uploadImage(@Part body: MultipartBody.Part): Call<UploadFileResponse>
 }
 
 suspend fun sendMessage(messages: List<MessageRemote>): List<MessageRemoteResponse> {

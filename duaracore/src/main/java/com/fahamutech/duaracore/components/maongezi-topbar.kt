@@ -90,7 +90,7 @@ private fun TitleView(totalUnread: Int?) {
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = totalUnread.toString() ?: "",
+            text = totalUnread.toString(),
             color = MaterialTheme.colors.primary,
             fontWeight = FontWeight(400),
             fontSize = 14.sp,

@@ -1,6 +1,7 @@
 package com.fahamutech.duaracore.states
 
 import android.content.Context
+import android.net.Uri
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -9,11 +10,13 @@ import androidx.lifecycle.viewModelScope
 import androidx.room.withTransaction
 import com.fahamutech.duaracore.models.Maongezi
 import com.fahamutech.duaracore.models.Message
+import com.fahamutech.duaracore.models.MessageType
 import com.fahamutech.duaracore.models.UserModel
 import com.fahamutech.duaracore.services.DuaraStorage
 import com.fahamutech.duaracore.services.RECEIVE_MESSAGE_NOTIFICATION_ID
 import com.fahamutech.duaracore.utils.encryptMessage
 import com.fahamutech.duaracore.utils.stringFromDate
+import com.fahamutech.duaracore.workers.startSendImageMessageWorker
 import com.fahamutech.duaracore.workers.startSendMessageWorker
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
@@ -66,7 +69,8 @@ class OngeziState : ViewModel() {
                 sender_pubkey = userModel.pub,
                 sender_nickname = userModel.nickname,
                 receiver_nickname = maongezi.receiver_nickname,
-                maongezi_id = maongezi.id
+                maongezi_id = maongezi.id,
+                type = MessageType.TEXT.toString()
             )
             val messageOutbox = encryptMessage(messageLocal, context)
             storage.withTransaction {
@@ -77,4 +81,36 @@ class OngeziState : ViewModel() {
             startSendMessageWorker(context)
         }
     }
+
+    fun saveImageMessage(
+        maongezi: Maongezi,
+        path: String,
+        userModel: UserModel,
+        context: Context
+    ) {
+        val storage = DuaraStorage.getInstance(context)
+        viewModelScope.launch {
+            val date = stringFromDate(Date())
+            val messageLocal = Message(
+                date = date,
+                content = path,
+                duara_id = maongezi.receiver_duara_id,
+                receiver_pubkey = maongezi.receiver_pubkey,
+                sender_pubkey = userModel.pub,
+                sender_nickname = userModel.nickname,
+                receiver_nickname = maongezi.receiver_nickname,
+                maongezi_id = maongezi.id,
+                type = MessageType.IMAGE.toString()
+            )
+//            val messageOutbox = encryptMessage(messageLocal, context)
+            storage.withTransaction {
+                storage.message().save(messageLocal)
+//                storage.messageOutbox().save(messageOutbox)
+                storage.maongezi().updateOngeziLastSeen(maongezi.id, date)
+            }
+            startSendImageMessageWorker(context, messageLocal)
+//            startSendMessageWorker(context)
+        }
+    }
+
 }

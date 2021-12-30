@@ -156,8 +156,8 @@ fun HelperMessage() {
     )
 }
 
+@ExperimentalFoundationApi
 @ExperimentalMaterialApi
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MaduaraList(
     maduara: List<DuaraRemote>, navController: NavController, context: Context

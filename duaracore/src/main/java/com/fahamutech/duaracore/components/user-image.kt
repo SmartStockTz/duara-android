@@ -42,19 +42,6 @@ fun UserImage(user: UserModel, uploadImage: (uri: Uri?, context: Context) -> Uni
             messageToApp(exception?.message ?: "Imeshindwa weka picha, jaribu tena", context)
         }
     }
-//    val permissionLauncher = rememberLauncherForActivityResult(
-//        ActivityResultContracts.RequestPermission()
-//    ) { isGranted: Boolean ->
-//        if (isGranted) {
-//            cropImage.launch(
-//                options {
-//                    setGuidelines(CropImageView.Guidelines.ON)
-//                }
-//            )
-//        } else {
-//            messageToApp("Ruhusu kusoma picha ili iweze kuweka picha yako", context)
-//        }
-//    }
     val bitmap = remember { mutableStateOf<Bitmap?>(null) }
     Column(
         modifier = Modifier
@@ -66,17 +53,7 @@ fun UserImage(user: UserModel, uploadImage: (uri: Uri?, context: Context) -> Uni
         ) {
             Spacer(modifier = Modifier.weight(1.0f))
             IconButton(onClick = {
-//                when (PackageManager.PERMISSION_GRANTED) {
-//                    ContextCompat.checkSelfPermission(
-//                        context,
-//                        Manifest.permission.READ_EXTERNAL_STORAGE
-//                    ) -> {
                 cropImageStart(cropImage)
-//                    }
-//                    else -> {
-//                        permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-//                    }
-//                }
             }) {
                 Icon(
                     Icons.Default.Edit,
@@ -117,13 +94,6 @@ fun UserImage(user: UserModel, uploadImage: (uri: Uri?, context: Context) -> Uni
         }
     }
     image?.let {
-//        if (Build.VERSION.SDK_INT < 28) {
-//            bitmap.value = MediaStore.Images
-//                .Media.getBitmap(context.contentResolver, it)
-//        } else {
-//            val source = ImageDecoder
-//                .createSource(context.contentResolver, it)
         bitmap.value = image?.getBitmap(context)
-//        }
     }
 }

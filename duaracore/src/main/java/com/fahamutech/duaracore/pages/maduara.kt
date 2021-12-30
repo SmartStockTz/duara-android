@@ -20,8 +20,8 @@ import com.fahamutech.duaracore.services.DuaraStorage
 import com.fahamutech.duaracore.states.MaduaraState
 import kotlinx.coroutines.launch
 
+@ExperimentalMaterialApi
 @ExperimentalFoundationApi
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MaduaraPage(
     maduaraState: MaduaraState = viewModel(),
@@ -49,6 +49,7 @@ fun MaduaraPage(
     }
 }
 
+@ExperimentalFoundationApi
 @ExperimentalMaterialApi
 @Composable
 fun MaduaraView(

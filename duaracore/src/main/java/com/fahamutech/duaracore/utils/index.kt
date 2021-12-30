@@ -32,6 +32,10 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.and
+import com.google.gson.GsonBuilder
+
+
+
 
 object OPTIONS {
     var ChildMainActivity: Class<*>? = null
@@ -40,7 +44,7 @@ object OPTIONS {
 }
 
 const val baseUrl = "https://maduara-faas.bfast.fahamutech.com"
-const val baseUrlIpfs = "https://ipfs.bfast.fahamutech.com"
+const val baseUrlIpfs = "https://infura-ipfs.io"
 
 fun <T> getHttpClient(clazz: Class<T>, base: String = baseUrl): T {
     val okHttClient = OkHttpClient.Builder()
@@ -48,8 +52,24 @@ fun <T> getHttpClient(clazz: Class<T>, base: String = baseUrl): T {
         .readTimeout(5, TimeUnit.MINUTES)
         .writeTimeout(5, TimeUnit.MINUTES)
         .build()
+
     val retrofit = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
+        .client(okHttClient)
+        .baseUrl(base)
+        .build()
+    return retrofit.create(clazz)
+}
+
+fun <T> getHttpClientPlain(clazz: Class<T>, base: String = baseUrl): T {
+    val okHttClient = OkHttpClient.Builder()
+        .connectTimeout(5, TimeUnit.MINUTES)
+        .readTimeout(5, TimeUnit.MINUTES)
+        .writeTimeout(5, TimeUnit.MINUTES)
+        .build()
+
+    val retrofit = Retrofit.Builder()
+//        .addConverterFactory(GsonConverterFactory.create(gson))
         .client(okHttClient)
         .baseUrl(base)
         .build()
@@ -253,7 +273,7 @@ suspend fun decryptImageMessage(
 ): ByteArray? {
     return withContext(Dispatchers.IO) {
         try {
-            generateSharedKey(senderPubModel, context) { secretKey, iv ->
+            return@withContext generateSharedKey(senderPubModel, context) { secretKey, iv ->
                 val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
                 cipher.init(Cipher.DECRYPT_MODE, secretKey, iv)
                 val decryptMeBytes: ByteArray = Base64.decode(imageContent, Base64.DEFAULT)
@@ -263,8 +283,8 @@ suspend fun decryptImageMessage(
             }
         } catch (e: Throwable) {
             Log.e("ERROR DECRY", e.toString())
+            return@withContext null
         }
-        null
     }
 }
 

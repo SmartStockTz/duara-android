@@ -26,11 +26,11 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MaongeziTopBar(context: Context, navController: NavController) {
-    val totalUnread = remember { mutableStateOf<Int?>(0) }
+    var totalUnread by remember { mutableStateOf<Int?>(0) }
     val scope = rememberCoroutineScope()
     TopAppBar(
         title = {
-            TitleView(totalUnread.value)
+            TitleView(totalUnread)
         },
         actions = {
             ActionsView(navController)
@@ -39,8 +39,8 @@ fun MaongeziTopBar(context: Context, navController: NavController) {
     DisposableEffect("maongezi_top_bar") {
         val storage = DuaraStorage.getInstance(context)
         val s = scope.launch {
-            storage.message().totalUnread().distinctUntilChanged().collect {
-                totalUnread.value = it
+            storage.message().totalUnreadGroup().collect {
+                totalUnread = it
             }
         }
         onDispose {

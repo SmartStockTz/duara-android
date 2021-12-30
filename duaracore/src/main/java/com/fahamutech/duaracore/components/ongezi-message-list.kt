@@ -89,44 +89,16 @@ private fun MessageListItemReceive(hideOwner: Boolean, message: Message) {
         modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
     ) {
         if (!hideOwner) {
-            val imageUrl =
-                "$baseUrl/account/picture/${message.sender_pubkey?.x}/${message.sender_pubkey?.y}"
-            CoilImage(
-                imageModel = imageUrl,
-                contentScale = ContentScale.Crop,
-                placeHolder = ImageVector.vectorResource(id = R.drawable.ic_message_sender_bg),
-                error = ImageVector.vectorResource(id = R.drawable.ic_message_sender_bg),
-                modifier = Modifier
-                    .size(30.dp)
-                    .clip(CircleShape),
-//                    .absolutePadding(0.dp, 16.dp, 0.dp, 0.dp),
-            )
+            ReceiveProfile(message)
         }
         Column(
             modifier = Modifier.absolutePadding(40.dp)
         ) {
             if (!hideOwner) {
-                Text(
-                    text = message.sender_nickname,
-                    fontWeight = FontWeight(300),
-                    fontSize = 14.sp,
-                    lineHeight = 16.sp,
-                    color = Color(0xFF747474),
-                    modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
-                )
+                ReceiverName(message)
             }
             if (message.type == MessageType.IMAGE.toString()) {
-                CoilImage(
-                    imageModel = File(message.content),
-                    contentScale = ContentScale.Crop,
-                    placeHolder = ImageVector.vectorResource(id = R.drawable.ic_image_placeholder),
-                    error = ImageVector.vectorResource(id = R.drawable.ic_image_placeholder_error),
-                    modifier = Modifier
-                        .widthIn(200.dp, 500.dp)
-                        .fillMaxWidth()
-                        .heightIn(78.dp,400.dp)
-                        .clip(CircleShape.copy(CornerSize(8.dp)))
-                )
+                ImageMessageView(message)
             } else SelectionContainer {
                 LinkifyText(text = message.content)
             }
@@ -135,53 +107,89 @@ private fun MessageListItemReceive(hideOwner: Boolean, message: Message) {
 }
 
 @Composable
+private fun ReceiverName(message: Message) {
+    Text(
+        text = message.sender_nickname,
+        fontWeight = FontWeight(300),
+        fontSize = 14.sp,
+        lineHeight = 16.sp,
+        color = Color(0xFF747474),
+        modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
+    )
+}
+
+@Composable
+private fun ReceiveProfile(message: Message) {
+    val imageUrl =
+        "$baseUrl/account/picture/${message.sender_pubkey?.x}/${message.sender_pubkey?.y}"
+    CoilImage(
+        imageModel = imageUrl,
+        contentScale = ContentScale.Crop,
+        placeHolder = ImageVector.vectorResource(id = R.drawable.ic_message_sender_bg),
+        error = ImageVector.vectorResource(id = R.drawable.ic_message_sender_bg),
+        modifier = Modifier.size(30.dp).clip(CircleShape)
+    )
+}
+
+@Composable
 private fun MessageListItemSent(hideOwner: Boolean, message: Message) {
     Box(
         modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
     ) {
         if (!hideOwner) {
-            val imageUrl =
-                "$baseUrl/account/picture/${message.sender_pubkey?.x}/${message.sender_pubkey?.y}"
-            CoilImage(
-                imageModel = imageUrl,
-                contentScale = ContentScale.Crop,
-                placeHolder = ImageVector.vectorResource(id = R.drawable.ic_list_item_bg),
-                error = ImageVector.vectorResource(id = R.drawable.ic_list_item_bg),
-                modifier = Modifier
-                    .size(30.dp)
-                    .clip(CircleShape)
-//                    .absolutePadding(0.dp, 16.dp, 0.dp, 0.dp),
-            )
+            SenderProfile(message)
         }
         Column(
             modifier = Modifier.absolutePadding(40.dp)
         ) {
             if (!hideOwner) {
-                Text(
-                    text = message.sender_nickname,
-                    fontWeight = FontWeight(300),
-                    fontSize = 14.sp,
-                    lineHeight = 16.sp,
-                    color = Color(0xFF747474),
-                    modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
-                )
+                SenderName(message)
             }
             if (message.type == MessageType.IMAGE.toString()) {
-                CoilImage(
-                    imageModel = File(message.content),
-                    placeHolder = ImageVector.vectorResource(id = R.drawable.ic_image_placeholder),
-                    error = ImageVector.vectorResource(id = R.drawable.ic_image_placeholder_error),
-                    modifier = Modifier
-                        .widthIn(0.dp, 500.dp)
-                        .fillMaxWidth()
-                        .heightIn(78.dp,250.dp)
-                        .clip(CircleShape.copy(CornerSize(8.dp)))
-                )
+                ImageMessageView(message)
             }else SelectionContainer {
                 LinkifyText(text = message.content)
             }
         }
     }
+}
+
+@Composable
+private fun SenderName(message: Message) {
+    Text(
+        text = message.sender_nickname,
+        fontWeight = FontWeight(300),
+        fontSize = 14.sp,
+        lineHeight = 16.sp,
+        color = Color(0xFF747474),
+        modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
+    )
+}
+
+@Composable
+private fun SenderProfile(message: Message) {
+    val imageUrl = "$baseUrl/account/picture/${message.sender_pubkey?.x}/${message.sender_pubkey?.y}"
+    CoilImage(
+        imageModel = imageUrl,
+        contentScale = ContentScale.Crop,
+        placeHolder = ImageVector.vectorResource(id = R.drawable.ic_list_item_bg),
+        error = ImageVector.vectorResource(id = R.drawable.ic_list_item_bg),
+        modifier = Modifier.size(30.dp).clip(CircleShape)
+    )
+}
+
+@Composable
+private fun ImageMessageView(message: Message) {
+    CoilImage(
+        imageModel = File(message.content),
+        placeHolder = ImageVector.vectorResource(id = R.drawable.ic_image_placeholder),
+        error = ImageVector.vectorResource(id = R.drawable.ic_image_placeholder_error),
+        modifier = Modifier
+            .widthIn(0.dp, 500.dp)
+            .fillMaxWidth()
+            .heightIn(78.dp,200.dp)
+            .clip(CircleShape.copy(CornerSize(8.dp)))
+    )
 }
 
 @Composable
@@ -198,7 +206,6 @@ private fun MessageListTimeStamp(date: String) {
             .absolutePadding(0.dp, 8.dp, 0.dp, 16.dp),
     )
 }
-
 
 @Composable
 private fun LinkifyText(text: String, modifier: Modifier = Modifier) {

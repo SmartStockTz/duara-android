@@ -1,6 +1,7 @@
 package com.fahamutech.duaracore.components
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
@@ -183,10 +184,11 @@ fun getImageStart(
         options {
 //            setGuidelines(CropImageView.Guidelines.ON)
             setAutoZoomEnabled(true)
-            setInitialCropWindowPaddingRatio(0f)
-            setOutputCompressQuality(60)
+            setInitialCropWindowPaddingRatio(0.1f)
+            setOutputCompressFormat(Bitmap.CompressFormat.JPEG)
+            setOutputCompressQuality(50)
 //            setFixAspectRatio(true)
-            setAspectRatio(16, 10)
+//            setAspectRatio(16, 10)
             setImageSource(gallery, camera)
         }
     )

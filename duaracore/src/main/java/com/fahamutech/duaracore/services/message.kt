@@ -6,6 +6,8 @@ import com.fahamutech.duaracore.models.UploadFileResponse
 import com.fahamutech.duaracore.utils.baseUrlIpfs
 import com.fahamutech.duaracore.utils.getHttpClient
 import okhttp3.MultipartBody
+import okhttp3.Response
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.await
 import retrofit2.http.*
@@ -18,6 +20,8 @@ interface MessageFunctions {
     @Multipart
     @POST("/storage/maduara")
     fun uploadImage(@Part body: MultipartBody.Part): Call<UploadFileResponse>
+    @GET
+    fun downloadImage(@Url url: String): Call<ResponseBody>
 }
 
 suspend fun sendMessage(messages: List<MessageRemote>): List<MessageRemoteResponse> {

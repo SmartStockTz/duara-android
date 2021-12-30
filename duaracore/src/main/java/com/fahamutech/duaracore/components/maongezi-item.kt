@@ -24,6 +24,7 @@ import com.fahamutech.duaracore.R
 import com.fahamutech.duaracore.models.Maongezi
 import com.fahamutech.duaracore.models.Message
 import com.fahamutech.duaracore.models.MessageStatus
+import com.fahamutech.duaracore.models.MessageType
 import com.fahamutech.duaracore.services.DuaraStorage
 import com.fahamutech.duaracore.states.MaongeziState
 import com.fahamutech.duaracore.utils.baseUrl
@@ -92,7 +93,6 @@ fun MaongeziItem(
         }
         val st = scope.launch {
             storage.message().maongeziUnreadMessage(maongezi.id).collect {
-//                Log.e("TOTAL UN", it.toString())
                 totalUnread = it
             }
         }
@@ -130,7 +130,7 @@ private fun ShowDeleteConversationDialog(
 @ExperimentalMaterialApi
 @Composable
 private fun OngeziItemLastMessage(message: Message?, totalUnread: Int?) {
-    val text = message?.content ?: ""
+    val text = if (message?.type == MessageType.IMAGE.toString()) "Ametuma Picha" else message?.content ?: ""
     val fw = if (message?.status ?: "" == MessageStatus.UNREAD.toString()) {
         500
     } else 300

@@ -7,10 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import com.fahamutech.duara.ui.theme.DuaraTheme
 import com.fahamutech.duaracore.DuaraCore
@@ -19,7 +16,6 @@ import com.fahamutech.duaracore.states.OngeziState
 
 class DuaraAppActivity : DuaraCoreActivity() {
 
-    @OptIn(ExperimentalFoundationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val ongeziState by viewModels<OngeziState>()
@@ -28,7 +24,7 @@ class DuaraAppActivity : DuaraCoreActivity() {
 }
 
 
-@ExperimentalFoundationApi
+
 @Composable
 fun DuaraApp(
     activity: ComponentActivity,

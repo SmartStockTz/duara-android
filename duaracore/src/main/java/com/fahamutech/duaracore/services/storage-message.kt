@@ -29,6 +29,9 @@ interface MessageStorage {
     @Query("select count(status) from message where status='UNREAD'")
     fun totalUnread(): Flow<Int?>
 
+    @Query("select count(distinct maongezi_id) from message where status='UNREAD' group by maongezi_id")
+    fun totalUnreadGroup(): Flow<Int?>
+
     @Query("update message set status='READ' where maongezi_id=(:ongeziId)")
     suspend fun markAllRead(ongeziId: String)
 

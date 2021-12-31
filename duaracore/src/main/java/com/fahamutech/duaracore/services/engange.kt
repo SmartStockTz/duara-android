@@ -18,6 +18,7 @@ import androidx.core.net.toUri
 import com.fahamutech.duaracore.DuaraCoreActivity
 import com.fahamutech.duaracore.R
 import com.fahamutech.duaracore.models.Message
+import com.fahamutech.duaracore.models.MessageType
 import com.fahamutech.duaracore.utils.OPTIONS
 
 private const val NOTIFICATION_CHANNEL = "receive_message"
@@ -48,7 +49,7 @@ private fun getPendingIntent(context: Context, maongezi_id: String): PendingInte
 private fun notificationView(context: Context, message: Message): NotificationCompat.Builder {
     val maongeziId = message.sender_pubkey?.x ?: "na"
     val title = message.sender_nickname
-    val messageText = message.content
+    val messageText = if (message.type == MessageType.IMAGE.toString()) "Picha" else message.content
     val pendingIntent = getPendingIntent(context, maongeziId)
     return NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
         .setSmallIcon(R.drawable.ic_notification_icon)

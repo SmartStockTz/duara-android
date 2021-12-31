@@ -1,16 +1,19 @@
 package com.fahamutech.duaracore.workers
 
 import android.content.Context
+import android.os.Environment
 import android.util.Log
 import androidx.room.withTransaction
 import androidx.work.*
 import com.fahamutech.duaracore.models.*
 import com.fahamutech.duaracore.services.*
-import com.fahamutech.duaracore.utils.OPTIONS
-import com.fahamutech.duaracore.utils.decryptMessage
-import com.fahamutech.duaracore.utils.stringFromDate
+import com.fahamutech.duaracore.utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import retrofit2.await
+import java.io.File
+import java.io.FileOutputStream
+import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -53,6 +56,7 @@ class RetrieveMessagesWorker(context: Context, workerParameters: WorkerParameter
                 Result.success()
             }
         } catch (e: Exception) {
+//            throw e
             Log.e("RETRIEVE CID ERROR", e.toString())
             Result.retry()
         }
@@ -67,6 +71,29 @@ private suspend fun handleNewMessage(
         val messageDecrypted = decryptMessage(messageFromCID, context)
         if (messageDecrypted === null) {
             return
+        }
+        if (messageDecrypted.type == MessageType.IMAGE.toString()) {
+//            Log.e("FFFFF", "load image")
+            val messageBase64 = getHttpClientPlain(MessageFunctions::class.java)
+                .downloadImage(messageDecrypted.content).await()
+            val m = withContext(Dispatchers.IO){return@withContext messageBase64.string().orEmpty()}
+//            Log.e("FFFFF", m.length.toString())
+            val messageBytes = decryptImageMessage(messageDecrypted.sender_pubkey!!, m, context)
+            val imageName = "/receive/Duara-${stringToSHA256(messageDecrypted.content)}.jpg"
+            val file = File(
+                context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                imageName
+            )
+            if (file.parentFile?.mkdirs() == false) {
+                Log.e("LOG_TAG", "Directory not created")
+            }
+            if (messageBytes != null) {
+                Log.e("LOG MB", messageBytes.size.toString())
+            }
+            FileOutputStream(file).use { fos ->
+                fos.write(messageBytes)
+            }
+            messageDecrypted.content = file.absolutePath
         }
         val mid = messageDecrypted.sender_pubkey!!.x
         messageDecrypted.status = MessageStatus.UNREAD.toString()
@@ -93,10 +120,11 @@ private suspend fun handleNewMessage(
                 storage.messageCid().delete(message.cid ?: "")
             }
         }
-        if (OPTIONS.IS_VISIBLE){
+        if (OPTIONS.IS_VISIBLE) {
             playMessageSound(context)
-        }else showMessageNotification(context, messageDecrypted)
+        } else showMessageNotification(context, messageDecrypted)
     } catch (e: Throwable) {
+        e.printStackTrace()
         Log.e("Handle message", e.toString())
         throw e
     }

@@ -20,6 +20,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.security.*
 import java.text.SimpleDateFormat
@@ -30,6 +31,11 @@ import javax.crypto.KeyAgreement
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
+import kotlin.experimental.and
+import com.google.gson.GsonBuilder
+
+
+
 
 object OPTIONS {
     var ChildMainActivity: Class<*>? = null
@@ -38,7 +44,7 @@ object OPTIONS {
 }
 
 const val baseUrl = "https://maduara-faas.bfast.fahamutech.com"
-const val baseUrlIpfs = "https://ipfs.bfast.fahamutech.com"
+const val baseUrlIpfs = "https://infura-ipfs.io"
 
 fun <T> getHttpClient(clazz: Class<T>, base: String = baseUrl): T {
     val okHttClient = OkHttpClient.Builder()
@@ -46,8 +52,24 @@ fun <T> getHttpClient(clazz: Class<T>, base: String = baseUrl): T {
         .readTimeout(5, TimeUnit.MINUTES)
         .writeTimeout(5, TimeUnit.MINUTES)
         .build()
+
     val retrofit = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
+        .client(okHttClient)
+        .baseUrl(base)
+        .build()
+    return retrofit.create(clazz)
+}
+
+fun <T> getHttpClientPlain(clazz: Class<T>, base: String = baseUrl): T {
+    val okHttClient = OkHttpClient.Builder()
+        .connectTimeout(5, TimeUnit.MINUTES)
+        .readTimeout(5, TimeUnit.MINUTES)
+        .writeTimeout(5, TimeUnit.MINUTES)
+        .build()
+
+    val retrofit = Retrofit.Builder()
+//        .addConverterFactory(GsonConverterFactory.create(gson))
         .client(okHttClient)
         .baseUrl(base)
         .build()
@@ -222,6 +244,76 @@ suspend fun decryptMessage(messageRemote: MessageRemote, context: Context): Mess
     }
 }
 
+suspend fun encryptImageMessage(
+    receiverPubModel: PubModel,
+    imageBytes: ByteArray,
+    context: Context
+): String {
+    return withContext(Dispatchers.IO) {
+//        val messageString = Gson().toJson(message, Message::class.java)
+//        val messageBytes = messageString.toByteArray(StandardCharsets.UTF_8)
+        return@withContext generateSharedKey(receiverPubModel, context) { secretKey, iv ->
+            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv)
+            val encByte: ByteArray = cipher.doFinal(imageBytes)
+            return@generateSharedKey Base64.encodeToString(encByte, Base64.DEFAULT)
+//            MessageOutBox(
+//                receiver_pubkey = message.receiver_pubkey,
+//                sender_pubkey = message.sender_pubkey,
+//                message = enc
+//            )
+        }
+    }
+}
+
+suspend fun decryptImageMessage(
+    senderPubModel: PubModel,
+    imageContent: String,
+    context: Context
+): ByteArray? {
+    return withContext(Dispatchers.IO) {
+        try {
+            return@withContext generateSharedKey(senderPubModel, context) { secretKey, iv ->
+                val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+                cipher.init(Cipher.DECRYPT_MODE, secretKey, iv)
+                val decryptMeBytes: ByteArray = Base64.decode(imageContent, Base64.DEFAULT)
+                return@generateSharedKey cipher.doFinal(decryptMeBytes)
+//                val originalText = String(textBytes, StandardCharset.UTF_8)
+//                message = Gson().fromJson(originalText, Message::class.java)
+            }
+        } catch (e: Throwable) {
+            Log.e("ERROR DECRY", e.toString())
+            return@withContext null
+        }
+    }
+}
+
+fun getFileChecksum(digest: MessageDigest, fis: InputStream): String? {
+    //Create byte array to read data in chunks
+    val byteArray = ByteArray(1024)
+    var bytesCount = 0
+
+    //Read file data and update in message digest
+    while (fis.read(byteArray).also { bytesCount = it } != -1) {
+        digest.update(byteArray, 0, bytesCount)
+    }
+
+    //close the stream; We don't need it now.
+    fis.close()
+
+    //Get the hash's bytes
+    val bytes = digest.digest()
+
+    //This bytes[] has bytes in decimal format;
+    //Convert it to hexadecimal format
+    val sb = java.lang.StringBuilder()
+    for (i in bytes.indices) {
+        sb.append(((bytes[i] and 0xff.toByte()) + 0x100).toString(16).substring(1))
+    }
+
+    //return complete hash
+    return sb.toString()
+}
 
 
 

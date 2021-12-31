@@ -51,8 +51,6 @@ fun UkurasaBody(user: UserModel) {
                 val type = cR.getType(uri)
                 val path = uri.toString()
                 startUploadAndUpdateProfilePicture(path, type, context)
-            } else {
-                Log.e("NUL IMAGE URI", "****")
             }
         }
         Divider(color = Color(0xFFCCCCCC))
@@ -71,7 +69,6 @@ private fun UserName(user: UserModel) {
     val keyboardController = LocalSoftwareKeyboardController.current
     var nickname by remember { mutableStateOf(user.nickname) }
     Row {
-//        var enabled by remember { mutableStateOf(false) }
         Icon(
             Icons.Default.Person, contentDescription = "person",
             modifier = Modifier.absolutePadding(0.dp, 20.dp, 8.dp, 20.dp),
@@ -103,7 +100,6 @@ private fun UserName(user: UserModel) {
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(
                     onDone = {
-//                        enabled = false
                         updateName(nickname)
                         keyboardController?.hide()
                         focusManager.clearFocus(true)
@@ -111,25 +107,6 @@ private fun UserName(user: UserModel) {
                 )
             )
         }
-//        IconButton(
-//            onClick = {
-//                if (enabled) {
-//                    updateName(nickname)
-//                    focusManager.clearFocus(true)
-//                } else focusRequester.requestFocus()
-//                enabled = !enabled
-//            },
-//            modifier = Modifier.absolutePadding(4.dp, 10.dp, 0.dp, 10.dp),
-//        ) {
-//            if (enabled) Icon(
-//                Icons.Default.Done, contentDescription = "done_nickname",
-//                tint = Color(0xFF6D6D6D)
-//            )
-//            else Icon(
-//                Icons.Default.Edit, contentDescription = "edit_nick_name",
-//                tint = Color(0xFF6D6D6D)
-//            )
-//        }
     }
 }
 
@@ -145,7 +122,7 @@ fun cropImageStart(cropImage: ManagedActivityResultLauncher<CropImageContractOpt
 }
 
 private fun updateName(name: String) {
-//    Log.e("TAG NAME", "start update name,  $name")
+
 }
 
 

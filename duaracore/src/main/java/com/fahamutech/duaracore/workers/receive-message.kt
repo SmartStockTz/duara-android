@@ -67,14 +67,14 @@ private suspend fun handleNewMessage(
     message: MessageCID, storage: DuaraDatabase, context: Context
 ) {
     try {
-        val messageFromCID = retrieveMessage(message.cid ?: "")
+        val messageFromCID = retrieveMessage(message.cid ?: "", context)
         val messageDecrypted = decryptMessage(messageFromCID, context)
         if (messageDecrypted === null) {
             return
         }
         if (messageDecrypted.type == MessageType.IMAGE.toString()) {
 //            Log.e("FFFFF", "load image")
-            val messageBase64 = getHttpClientPlain(MessageFunctions::class.java)
+            val messageBase64 = getHttpClientPlain(MessageFunctions::class.java, context)
                 .downloadImage(messageDecrypted.content).await()
             val m = withContext(Dispatchers.IO){return@withContext messageBase64.string().orEmpty()}
 //            Log.e("FFFFF", m.length.toString())

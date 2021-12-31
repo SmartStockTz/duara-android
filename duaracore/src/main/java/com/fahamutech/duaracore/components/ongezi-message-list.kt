@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.SpanStyle
@@ -37,7 +38,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.fahamutech.duaracore.models.Message
 import com.fahamutech.duaracore.models.UserModel
-import com.fahamutech.duaracore.utils.baseUrl
 import com.skydoves.landscapist.coil.CoilImage
 import java.util.regex.Pattern
 import com.fahamutech.duaracore.R
@@ -127,8 +127,9 @@ private fun ReceiverName(message: Message) {
 
 @Composable
 private fun ReceiveProfile(message: Message) {
+    val context = LocalContext.current
     val imageUrl =
-        "$baseUrl/account/picture/${message.sender_pubkey?.x}/${message.sender_pubkey?.y}"
+        "${context.getString(R.string.base_server_url)}/account/picture/${message.sender_pubkey?.x}/${message.sender_pubkey?.y}"
     CoilImage(
         imageModel = imageUrl,
         contentScale = ContentScale.Crop,
@@ -177,8 +178,9 @@ private fun SenderName(message: Message) {
 
 @Composable
 private fun SenderProfile(message: Message) {
+    val context = LocalContext.current
     val imageUrl =
-        "$baseUrl/account/picture/${message.sender_pubkey?.x}/${message.sender_pubkey?.y}"
+        "${context.getString(R.string.base_server_url)}/account/picture/${message.sender_pubkey?.x}/${message.sender_pubkey?.y}"
     CoilImage(
         imageModel = imageUrl,
         contentScale = ContentScale.Crop,

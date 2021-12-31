@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,7 +28,6 @@ import com.fahamutech.duaracore.models.MessageStatus
 import com.fahamutech.duaracore.models.MessageType
 import com.fahamutech.duaracore.services.DuaraStorage
 import com.fahamutech.duaracore.states.MaongeziState
-import com.fahamutech.duaracore.utils.baseUrl
 import com.fahamutech.duaracore.utils.timeAgo
 import com.skydoves.landscapist.coil.CoilImage
 import kotlinx.coroutines.flow.collect
@@ -189,8 +189,9 @@ private fun OngeziItemPicture(maongezi: Maongezi) {
         contentAlignment = Alignment.Center,
         modifier = Modifier.absolutePadding(16.dp, 8.dp, 0.dp, 8.dp)
     ) {
+        val context = LocalContext.current
         val imageUrl =
-            "$baseUrl/account/picture/${maongezi.receiver_pubkey?.x}/${maongezi.receiver_pubkey?.y}"
+            "${context.getString(R.string.base_server_url)}/account/picture/${maongezi.receiver_pubkey?.x}/${maongezi.receiver_pubkey?.y}"
         CoilImage(
             imageModel = imageUrl,
             contentScale = ContentScale.Crop,

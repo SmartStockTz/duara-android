@@ -9,7 +9,6 @@ import com.fahamutech.duaracore.models.UpdatePictureRequest
 import com.fahamutech.duaracore.models.XY
 import com.fahamutech.duaracore.services.AccountFunctions
 import com.fahamutech.duaracore.services.DuaraStorage
-import com.fahamutech.duaracore.utils.baseUrl
 import com.fahamutech.duaracore.utils.getHttpClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -20,6 +19,7 @@ import retrofit2.await
 import java.io.File
 import java.util.concurrent.TimeUnit
 import java.io.FileInputStream
+import com.fahamutech.duaracore.R
 
 
 class UploadProfilePictureWorker(context: Context, workerParameters: WorkerParameters) :
@@ -57,7 +57,9 @@ class UpdateProfilePictureUrlWorker(context: Context, workerParameters: WorkerPa
                 y = user.pub?.y
             )
             val call =
-                getHttpClient(AccountFunctions::class.java).updatePicture(updatePicture).await()
+                getHttpClient(AccountFunctions::class.java, applicationContext).updatePicture(
+                    updatePicture
+                ).await()
             user.picture = call
             storage.withTransaction {
                 storage.user().saveUser(user)
@@ -127,9 +129,9 @@ suspend fun uploadImageToServer(path: String?, type: String?, context: Context):
             RequestBody.create(MediaType.parse(type), bytes)
         )
         val call =
-            getHttpClient(AccountFunctions::class.java).uploadPicture(filePart).await()
-        return baseUrl + call.urls[0]
-    }else null
+            getHttpClient(AccountFunctions::class.java, context).uploadPicture(filePart).await()
+        return context.resources.getString(R.string.base_server_url) + call.urls[0]
+    } else null
 }
 
 

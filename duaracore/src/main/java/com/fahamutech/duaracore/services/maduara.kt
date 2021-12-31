@@ -169,7 +169,7 @@ suspend fun syncContacts(context: Context): MutableList<DuaraRemote> {
             syncSendModel.pub = user.pub!!
             syncSendModel.device = getDeviceId(context.contentResolver)
             val maduara =
-                getHttpClient(MaduaraFunctions::class.java).syncs(syncSendModel).await()
+                getHttpClient(MaduaraFunctions::class.java, context).syncs(syncSendModel).await()
             storage.withTransaction {
                 storage.maduara().deleteAll()
                 storage.maduara().saveMaduara(maduara)

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Duara</string>
+    <string name="base_server_url">https://maduara-faas.bfast.fahamutech.com</string>
+    <string name="base_ipfs_server_url">https://infura-ipfs.io</string>
 </resources>

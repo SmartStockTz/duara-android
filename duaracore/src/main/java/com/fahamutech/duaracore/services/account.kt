@@ -5,10 +5,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.provider.Settings
 import android.util.Log
-import com.fahamutech.duaracore.models.UpdateNicknameRequest
-import com.fahamutech.duaracore.models.UpdatePictureRequest
-import com.fahamutech.duaracore.models.UploadFileResponse
-import com.fahamutech.duaracore.models.UserModel
+import com.fahamutech.duaracore.models.*
 import com.fahamutech.duaracore.services.DuaraStorage
 import com.fahamutech.duaracore.utils.generateKeyPair
 import com.fahamutech.duaracore.utils.stringToSHA256
@@ -28,12 +25,15 @@ interface AccountFunctions {
     @Multipart
     @POST("/account/picture/upload")
     fun uploadPicture(@Part body: MultipartBody.Part): Call<UploadFileResponse>
+
     @POST("/account/picture")
     fun updatePicture(@Body data: UpdatePictureRequest): Call<String>
+
     @POST("/account/nickname")
     fun updateNickname(@Body data: UpdateNicknameRequest): Call<String>
+
     @POST("/account/token")
-    fun updateToken(@Body data: UpdateNicknameRequest): Call<String>
+    fun updateToken(@Body data: UpdateTokenRequest): Call<String>
 }
 
 suspend fun getIdentity(nickname: String, image: String, context: Context): UserModel {

@@ -1,12 +1,12 @@
 package com.fahamutech.duaracore.services
 
+import android.content.Context
 import com.fahamutech.duaracore.models.MessageRemote
 import com.fahamutech.duaracore.models.MessageRemoteResponse
 import com.fahamutech.duaracore.models.UploadFileResponse
-import com.fahamutech.duaracore.utils.baseUrlIpfs
 import com.fahamutech.duaracore.utils.getHttpClient
+import com.fahamutech.duaracore.utils.getHttpIpfsClient
 import okhttp3.MultipartBody
-import okhttp3.Response
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.await
@@ -24,12 +24,12 @@ interface MessageFunctions {
     fun downloadImage(@Url url: String): Call<ResponseBody>
 }
 
-suspend fun sendMessage(messages: List<MessageRemote>): List<MessageRemoteResponse> {
-    return getHttpClient(MessageFunctions::class.java).send(messages).await()
+suspend fun sendMessage(messages: List<MessageRemote>, context: Context): List<MessageRemoteResponse> {
+    return getHttpClient(MessageFunctions::class.java, context).send(messages).await()
 }
 
-suspend fun retrieveMessage(cid: String): MessageRemote {
-    return getHttpClient(MessageFunctions::class.java, baseUrlIpfs).retrieve(cid).await()
+suspend fun retrieveMessage(cid: String, context: Context): MessageRemote {
+    return getHttpIpfsClient(MessageFunctions::class.java, context).retrieve(cid).await()
 }
 
 

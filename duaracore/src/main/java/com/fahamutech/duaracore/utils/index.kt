@@ -6,6 +6,7 @@ import android.text.format.DateUtils
 import android.util.Base64
 import android.util.Log
 import android.widget.Toast
+import com.fahamutech.duaracore.R
 import com.fahamutech.duaracore.models.*
 import com.fahamutech.duaracore.services.DuaraStorage
 import com.fahamutech.duaracore.utils.OPTIONS.APPLICATION_ID
@@ -32,21 +33,17 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.and
-import com.google.gson.GsonBuilder
-
-
-
 
 object OPTIONS {
     var ChildMainActivity: Class<*>? = null
     var IS_VISIBLE = false
     var APPLICATION_ID = "com.fahamutech.duara"
+//    var BASE_SERVER_URL = "https://maduara-faas.bfast.fahamutech.com"
 }
 
-const val baseUrl = "https://maduara-faas.bfast.fahamutech.com"
-const val baseUrlIpfs = "https://infura-ipfs.io"
+//const val baseUrlIpfs = "https://infura-ipfs.io"
 
-fun <T> getHttpClient(clazz: Class<T>, base: String = baseUrl): T {
+fun <T> getHttpClient(clazz: Class<T>, context: Context): T {
     val okHttClient = OkHttpClient.Builder()
         .connectTimeout(5, TimeUnit.MINUTES)
         .readTimeout(5, TimeUnit.MINUTES)
@@ -56,12 +53,12 @@ fun <T> getHttpClient(clazz: Class<T>, base: String = baseUrl): T {
     val retrofit = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
         .client(okHttClient)
-        .baseUrl(base)
+        .baseUrl(context.resources.getString(R.string.base_server_url))
         .build()
     return retrofit.create(clazz)
 }
 
-fun <T> getHttpClientPlain(clazz: Class<T>, base: String = baseUrl): T {
+fun <T> getHttpIpfsClient(clazz: Class<T>, context: Context): T {
     val okHttClient = OkHttpClient.Builder()
         .connectTimeout(5, TimeUnit.MINUTES)
         .readTimeout(5, TimeUnit.MINUTES)
@@ -69,9 +66,23 @@ fun <T> getHttpClientPlain(clazz: Class<T>, base: String = baseUrl): T {
         .build()
 
     val retrofit = Retrofit.Builder()
-//        .addConverterFactory(GsonConverterFactory.create(gson))
+        .addConverterFactory(GsonConverterFactory.create())
         .client(okHttClient)
-        .baseUrl(base)
+        .baseUrl(context.resources.getString(R.string.base_ipfs_server_url))
+        .build()
+    return retrofit.create(clazz)
+}
+
+fun <T> getHttpClientPlain(clazz: Class<T>, context: Context): T {
+    val okHttClient = OkHttpClient.Builder()
+        .connectTimeout(5, TimeUnit.MINUTES)
+        .readTimeout(5, TimeUnit.MINUTES)
+        .writeTimeout(5, TimeUnit.MINUTES)
+        .build()
+
+    val retrofit = Retrofit.Builder()
+        .client(okHttClient)
+        .baseUrl(context.resources.getString(R.string.base_server_url))
         .build()
     return retrofit.create(clazz)
 }

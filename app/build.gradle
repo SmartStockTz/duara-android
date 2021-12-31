@@ -13,8 +13,8 @@ android {
         applicationId "com.fahamutech.duara"
         minSdk 21
         targetSdk 31
-        versionCode 7
-        versionName "2021.12.31-build.12-beta.5"
+        versionCode 8
+        versionName "2021.12.31-build.13-beta.6"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

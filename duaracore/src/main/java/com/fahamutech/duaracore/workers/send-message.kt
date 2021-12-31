@@ -9,7 +9,6 @@ import com.fahamutech.duaracore.models.MessageRemote
 import com.fahamutech.duaracore.services.DuaraStorage
 import com.fahamutech.duaracore.services.MessageFunctions
 import com.fahamutech.duaracore.services.sendMessage
-import com.fahamutech.duaracore.utils.baseUrl
 import com.fahamutech.duaracore.utils.encryptImageMessage
 import com.fahamutech.duaracore.utils.encryptMessage
 import com.fahamutech.duaracore.utils.getHttpClient
@@ -22,6 +21,7 @@ import okhttp3.RequestBody
 import retrofit2.await
 import java.io.File
 import java.util.concurrent.TimeUnit
+import com.fahamutech.duaracore.R
 
 class SendMessagesWorker(context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
@@ -44,7 +44,7 @@ class SendMessagesWorker(context: Context, workerParameters: WorkerParameters) :
                     receiver_pubkey = it.receiver_pubkey!!
                 )
             }
-            val response = sendMessage(messagesRemote)
+            val response = sendMessage(messagesRemote, applicationContext)
             val cids = response.map { it.cid }
             Log.e("MESSAGE SENT", cids.toString())
             messages.forEach {
@@ -81,8 +81,8 @@ class SendImageMessagesWorker(context: Context, workerParameters: WorkerParamete
                         RequestBody.create(MediaType.parse("plain/text"), base64data.toByteArray())
                     )
                     val response =
-                        getHttpClient(MessageFunctions::class.java).uploadImage(filePart).await()
-                    val url = baseUrl + response.urls[0]
+                        getHttpClient(MessageFunctions::class.java, applicationContext).uploadImage(filePart).await()
+                    val url = applicationContext.resources.getString(R.string.base_server_url) + response.urls[0]
                     message.content = url
                     val outbox = encryptMessage(message, applicationContext)
                     storage.messageOutbox().save(outbox)

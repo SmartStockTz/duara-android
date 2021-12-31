@@ -130,7 +130,7 @@ private fun ShowDeleteConversationDialog(
 @ExperimentalMaterialApi
 @Composable
 private fun OngeziItemLastMessage(message: Message?, totalUnread: Int?) {
-    val text = if (message?.type == MessageType.IMAGE.toString()) "Ametuma Picha" else message?.content ?: ""
+    val text = if (message?.type == MessageType.IMAGE.toString()) "Picha" else message?.content ?: ""
     val fw = if (message?.status ?: "" == MessageStatus.UNREAD.toString()) {
         500
     } else 300

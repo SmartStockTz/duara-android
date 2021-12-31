@@ -1,24 +1,28 @@
 package com.fahamutech.duaracore.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.SpanStyle
@@ -29,6 +33,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.fahamutech.duaracore.models.Message
 import com.fahamutech.duaracore.models.UserModel
 import com.fahamutech.duaracore.utils.baseUrl
@@ -36,6 +42,7 @@ import com.skydoves.landscapist.coil.CoilImage
 import java.util.regex.Pattern
 import com.fahamutech.duaracore.R
 import com.fahamutech.duaracore.models.MessageType
+import com.skydoves.landscapist.CircularReveal
 import java.io.File
 
 
@@ -127,7 +134,9 @@ private fun ReceiveProfile(message: Message) {
         contentScale = ContentScale.Crop,
         placeHolder = ImageVector.vectorResource(id = R.drawable.ic_message_sender_bg),
         error = ImageVector.vectorResource(id = R.drawable.ic_message_sender_bg),
-        modifier = Modifier.size(30.dp).clip(CircleShape)
+        modifier = Modifier
+            .size(30.dp)
+            .clip(CircleShape)
     )
 }
 
@@ -147,7 +156,7 @@ private fun MessageListItemSent(hideOwner: Boolean, message: Message) {
             }
             if (message.type == MessageType.IMAGE.toString()) {
                 ImageMessageView(message)
-            }else SelectionContainer {
+            } else SelectionContainer {
                 LinkifyText(text = message.content)
             }
         }
@@ -168,18 +177,25 @@ private fun SenderName(message: Message) {
 
 @Composable
 private fun SenderProfile(message: Message) {
-    val imageUrl = "$baseUrl/account/picture/${message.sender_pubkey?.x}/${message.sender_pubkey?.y}"
+    val imageUrl =
+        "$baseUrl/account/picture/${message.sender_pubkey?.x}/${message.sender_pubkey?.y}"
     CoilImage(
         imageModel = imageUrl,
         contentScale = ContentScale.Crop,
         placeHolder = ImageVector.vectorResource(id = R.drawable.ic_list_item_bg),
         error = ImageVector.vectorResource(id = R.drawable.ic_list_item_bg),
-        modifier = Modifier.size(30.dp).clip(CircleShape)
+        modifier = Modifier
+            .size(30.dp)
+            .clip(CircleShape)
     )
 }
 
 @Composable
 private fun ImageMessageView(message: Message) {
+    val scrollState = rememberScrollState()
+    var imageViewFlag by remember {
+        mutableStateOf(false)
+    }
     CoilImage(
         imageModel = File(message.content),
         placeHolder = ImageVector.vectorResource(id = R.drawable.ic_image_placeholder),
@@ -187,9 +203,72 @@ private fun ImageMessageView(message: Message) {
         modifier = Modifier
             .widthIn(0.dp, 500.dp)
             .fillMaxWidth()
-            .heightIn(78.dp,200.dp)
+            .heightIn(78.dp, 200.dp)
             .clip(CircleShape.copy(CornerSize(8.dp)))
+            .clickable {
+                imageViewFlag = true
+            }
     )
+    if (imageViewFlag) {
+        val configuration = LocalConfiguration.current
+        Dialog(
+            onDismissRequest = {
+                imageViewFlag = false
+            },
+            properties = DialogProperties(
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(scrollState)
+                    .heightIn(configuration.screenHeightDp.dp)
+                    .widthIn(configuration.screenWidthDp.dp)
+                    .clickable {
+                        imageViewFlag = false
+                    },
+                verticalArrangement = Arrangement.Center
+            ) {
+//                var scale by remember { mutableStateOf(1f) }
+//                val maxScale by remember { mutableStateOf(4f) }
+//                val minScale by remember { mutableStateOf(0.7f) }
+//                var translation by remember { mutableStateOf(Offset(0f, 0f)) }
+//                fun calculateNewScale(k: Float): Float {
+//                    return if ((scale <= maxScale && k > 1f) || (scale >= minScale && k < 1f)) scale * k else scale
+//                }
+                CoilImage(
+                    imageModel = File(message.content),
+                    placeHolder = ImageVector.vectorResource(id = R.drawable.ic_image_placeholder),
+                    error = ImageVector.vectorResource(id = R.drawable.ic_image_placeholder_error),
+                    modifier = Modifier
+//                        .zoomable(onZoomDelta = {
+//                            scale = calculateNewScale(it)
+//                        })
+//                        .rawDragGestureFilter(
+//                            object : DragObserver {
+//                                override fun onDrag(dragDistance: Offset): Offset {
+//                                    translation = translation.plus(dragDistance)
+//                                    return super.onDrag(dragDistance)
+//                                }
+//                            })
+//                        .graphicsLayer(
+//                            scaleX = scale,
+//                            scaleY = scale,
+//                            translationX = translation.x,
+//                            translationY = translation.y
+//                        )
+                        .widthIn(0.dp, 500.dp)
+                        .fillMaxWidth()
+//                        .fillMaxHeight()
+                        .clip(CircleShape.copy(CornerSize(8.dp)))
+                        .clickable {},
+                    circularReveal = CircularReveal(250),
+                    contentScale = ContentScale.FillWidth
+                )
+            }
+        }
+    }
 }
 
 @Composable

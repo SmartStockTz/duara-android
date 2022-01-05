@@ -1,9 +1,12 @@
 package com.fahamutech.duaracore.components
 
+import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,13 +27,18 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.canhub.cropper.CropImageContract
+import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageView
+import com.canhub.cropper.options
 import com.fahamutech.duaracore.models.UserModel
 import com.fahamutech.duaracore.utils.messageToApp
 import com.skydoves.landscapist.coil.CoilImage
 
 @Composable
-fun UserImage(user: UserModel, uploadImage: (uri: Uri?, context: Context) -> Unit) {
+fun UserImage(
+    user: UserModel,
+    uploadImage: (uri: Uri?, context: Context) -> Unit
+) {
     val context = LocalContext.current
     var image by remember { mutableStateOf<CropImageView.CropResult?>(null) }
     val cropImage = rememberLauncherForActivityResult(contract = CropImageContract()) { result ->
@@ -40,6 +48,24 @@ fun UserImage(user: UserModel, uploadImage: (uri: Uri?, context: Context) -> Uni
         } else {
             val exception = result.error
             messageToApp(exception?.message ?: "Imeshindwa weka picha, jaribu tena", context)
+        }
+    }
+    val permissionRequest = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        when {
+            it[Manifest.permission.READ_EXTERNAL_STORAGE] == false -> {
+                messageToApp("Hujaruhusu kusoma mafile ya picha", context)
+            }
+            it[Manifest.permission.CAMERA] == false -> {
+                messageToApp("Hujaruhusu kuchukua picha kwa camera", context)
+            }
+            it[Manifest.permission.WRITE_EXTERNAL_STORAGE] == false -> {
+                messageToApp("Hujaruhusu kuandika mafile ya picha", context)
+            }
+            else -> {
+                cropImageStart(cropImage)
+            }
         }
     }
     val bitmap = remember { mutableStateOf<Bitmap?>(null) }
@@ -53,7 +79,7 @@ fun UserImage(user: UserModel, uploadImage: (uri: Uri?, context: Context) -> Uni
         ) {
             Spacer(modifier = Modifier.weight(1.0f))
             IconButton(onClick = {
-                cropImageStart(cropImage)
+                permissionRequest.launch(permissions())
             }) {
                 Icon(
                     Icons.Default.Edit,
@@ -75,7 +101,7 @@ fun UserImage(user: UserModel, uploadImage: (uri: Uri?, context: Context) -> Uni
                     .clip(CircleShape.copy(CornerSize(26.dp)))
                     .background(color = Color(0xFFC4C4C4))
                     .clickable {
-                        cropImageStart(cropImage)
+                        permissionRequest.launch(permissions())
                     }
             ) {
                 if (bitmap.value != null) {
@@ -96,4 +122,30 @@ fun UserImage(user: UserModel, uploadImage: (uri: Uri?, context: Context) -> Uni
     image?.let {
         bitmap.value = image?.getBitmap(context)
     }
+}
+
+private fun permissions(): Array<String> {
+    return if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.P) {
+        arrayOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA
+        )
+    } else arrayOf(
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+        Manifest.permission.CAMERA
+    )
+}
+
+private fun cropImageStart(
+    cropImage: ManagedActivityResultLauncher<CropImageContractOptions, CropImageView.CropResult>
+) {
+    cropImage.launch(
+        options {
+            setGuidelines(CropImageView.Guidelines.ON)
+            setAutoZoomEnabled(true)
+            setFixAspectRatio(true)
+            setAspectRatio(100, 100)
+        }
+    )
 }

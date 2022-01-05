@@ -25,9 +25,6 @@ class MaongeziState : ViewModel() {
                     storage.maongezi().futaOngeziInStore(maongezi.id)
                     storage.message().deleteMaongeziMessages(maongezi.id)
                 }
-//                _maongezi.value = _maongezi.value?.filter {
-//                    it.id != maongezi.id
-//                }
             }) {
                 messageToApp(it, context)
             }

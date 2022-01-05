@@ -2,7 +2,6 @@ plugins {
     id 'com.android.library'
     id 'kotlin-android'
     id 'kotlin-kapt'
-//    id 'com.google.gms.google-services'
     id 'maven-publish'
 }
 
@@ -12,8 +11,8 @@ android {
     defaultConfig {
         minSdk 21
         targetSdk 31
-        versionCode 8
-        versionName "2021.12.31-build.13-beta.6"
+        versionCode 9
+        versionName "2022.1.4-build.14-beta.7"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -99,7 +98,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.6.0"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.6.10"
 
 }
 

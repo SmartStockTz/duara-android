@@ -1,5 +1,7 @@
 package com.fahamutech.duaracore.components
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -42,8 +44,16 @@ import com.skydoves.landscapist.coil.CoilImage
 import java.util.regex.Pattern
 import com.fahamutech.duaracore.R
 import com.fahamutech.duaracore.models.MessageType
+import com.fahamutech.duaracore.utils.messageToApp
 import com.skydoves.landscapist.CircularReveal
 import java.io.File
+import java.lang.Exception
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import androidx.core.content.ContextCompat.startActivity
+
+import android.content.Intent
+import androidx.core.content.ContextCompat
 
 
 @Composable
@@ -290,6 +300,7 @@ private fun MessageListTimeStamp(date: String) {
 
 @Composable
 private fun LinkifyText(text: String, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
     val layoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
     val linksList = extractUrls(text)
@@ -321,7 +332,11 @@ private fun LinkifyText(text: String, modifier: Modifier = Modifier) {
                     annotatedString.getStringAnnotations(position, position).firstOrNull()
                         ?.let { result ->
                             if (result.tag == "URL") {
-                                uriHandler.openUri(result.item)
+                                try {
+                                    uriHandler.openUri(result.item)
+                                }catch (e: Exception){
+                                    messageToApp(e.toString(), context)
+                                }
                             }
                         }
                 }

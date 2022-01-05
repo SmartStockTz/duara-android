@@ -89,7 +89,7 @@ fun DuaraCore(
         composable("ukurasa") {
             UkurasaPage(
                 navController = navController,
-                context = activity
+                activity = activity
             )
         }
     }

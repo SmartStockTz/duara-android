@@ -1,5 +1,6 @@
 package com.fahamutech.duaracore.components
 
+import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
@@ -8,6 +9,7 @@ import android.util.Log
 import android.webkit.MimeTypeMap
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,7 +44,6 @@ import com.fahamutech.duaracore.utils.stringFromDate
 import java.io.*
 import java.security.MessageDigest
 import java.util.*
-
 
 @Composable
 fun OngeziComposeBottomBar(
@@ -131,11 +132,8 @@ fun UploadImage(
     uploadImage: (path: String) -> Unit
 ) {
     val context = LocalContext.current
-//    var image by remember { mutableStateOf<CropImageView.CropResult?>(null) }
     val cropImage = rememberLauncherForActivityResult(contract = CropImageContract()) { result ->
         if (result.isSuccessful) {
-//            image = result
-//            result.getBitmap(context)?.let { uploadImage(it) }
             val file = getAppSpecificImageStorageDirFile(
                 result.uriContent,
                 result.getUriFilePath(context),
@@ -149,22 +147,32 @@ fun UploadImage(
             messageToApp(exception?.message ?: "Imeshindwa weka picha, jaribu tena", context)
         }
     }
-//    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
-//    image?.let {
-//        bitmap = image?.getBitmap(context)
-//    }
     Row {
+        val readStorageLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) {
+            if (it) {
+                getImageStart(cropImage, gallery = true, camera = false)
+            } else messageToApp("Hujaruhusu kusoma mafile ya picha", context)
+        }
         IconButton(
-            onClick = { getImageStart(cropImage, gallery = true, camera = false) }
+            onClick = { readStorageLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE) }
         ) {
             Icon(
                 painterResource(id = R.drawable.ic_baseline_image_24),
                 contentDescription = "tuma picha"
             )
         }
+        val cameraLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) {
+            if (it) {
+                getImageStart(cropImage, gallery = false, camera = true)
+            } else messageToApp("Hujaruhusu camera kupiga picha", context)
+        }
         IconButton(
             onClick = {
-                getImageStart(cropImage, gallery = false, camera = true)
+                cameraLauncher.launch(Manifest.permission.CAMERA)
             }
         ) {
             Icon(
@@ -182,30 +190,16 @@ fun getImageStart(
 ) {
     cropImage.launch(
         options {
-//            setGuidelines(CropImageView.Guidelines.ON)
             setAutoZoomEnabled(true)
             setInitialCropWindowPaddingRatio(0.1f)
             setOutputCompressFormat(Bitmap.CompressFormat.JPEG)
             setOutputCompressQuality(50)
-//            setFixAspectRatio(true)
-//            setAspectRatio(16, 10)
             setImageSource(gallery, camera)
         }
     )
 }
 
-//fun isExternalStorageWritable(): Boolean {
-//    return Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
-//}
-//
-//fun isExternalStorageReadable(): Boolean {
-//    return Environment.getExternalStorageState() in
-//            setOf(Environment.MEDIA_MOUNTED, Environment.MEDIA_MOUNTED_READ_ONLY)
-//}
-
 fun getAppSpecificImageStorageDirFile(uri: Uri?, path: String?, context: Context): File? {
-    // Get the pictures directory that's inside the app-specific directory on
-    // external storage.
     if (uri == null) {
         return null
     }

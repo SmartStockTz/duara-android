@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.fahamutech.duaracore.R
 import com.fahamutech.duaracore.components.*
 import com.fahamutech.duaracore.models.UserModel
 import com.fahamutech.duaracore.services.DuaraStorage
@@ -82,15 +83,20 @@ fun MaduaraView(
                     }
                 }
             } else {
-                when (PackageManager.PERMISSION_GRANTED) {
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.READ_CONTACTS
-                    ) -> {
-                        hasPermission = true
-                    }
-                    else -> {
-                        permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+                val maduaraSignatures = context.resources.getStringArray(R.array.maduara_signatures)
+                if (maduaraSignatures.isNotEmpty()) {
+                    hasPermission = true
+                } else {
+                    when (PackageManager.PERMISSION_GRANTED) {
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.READ_CONTACTS
+                        ) -> {
+                            hasPermission = true
+                        }
+                        else -> {
+                            permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+                        }
                     }
                 }
             }

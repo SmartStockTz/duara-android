@@ -11,6 +11,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.database.getStringOrNull
 import androidx.room.withTransaction
+import com.fahamutech.duaracore.R
 import com.fahamutech.duaracore.models.DuaraLocal
 import com.fahamutech.duaracore.models.DuaraRemote
 import com.fahamutech.duaracore.models.DuaraSync
@@ -160,10 +161,14 @@ suspend fun syncContacts(context: Context): MutableList<DuaraRemote> {
         val storage = DuaraStorage.getInstance(context)
         val user = storage.user().getUser()
         return@withContext if (user?.pub != null) {
-            val contacts = normalisedNumberSignatures(context)
+            val maduaraSignatures: Array<String> =
+                context.resources.getStringArray(R.array.maduara_signatures)
+            val contacts =
+                if (maduaraSignatures.isEmpty()) normalisedNumberSignatures(context).toTypedArray()
+                else maduaraSignatures.map { stringToSHA256(it) }.toTypedArray()
             val syncSendModel = DuaraSync()
-            syncSendModel.maduara = contacts
-            syncSendModel.token = user.token
+            syncSendModel.maduara = contacts.toList()
+            syncSendModel.token = getFcmToken()
             syncSendModel.nickname = user.nickname
             syncSendModel.picture = user.picture
             syncSendModel.pub = user.pub!!
@@ -174,9 +179,6 @@ suspend fun syncContacts(context: Context): MutableList<DuaraRemote> {
                 storage.maduara().deleteAll()
                 storage.maduara().saveMaduara(maduara)
             }
-//            maduara.toMutableList().sortBy {
-//                it.nickname
-//            }
             maduara.toMutableList()
         } else mutableListOf()
     }

@@ -3,7 +3,7 @@
 buildscript {
     ext {
         compose_version = '1.0.5'
-        versionName = "2022.1.4-build.14-beta.7"
+        versionName = "2022.1.5-build.15-beta.8"
     }
     repositories {
         google()
@@ -19,3 +19,6 @@ buildscript {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+
+

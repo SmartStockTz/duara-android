@@ -8,6 +8,7 @@ import android.util.Log
 import com.fahamutech.duaracore.models.*
 import com.fahamutech.duaracore.services.DuaraStorage
 import com.fahamutech.duaracore.utils.generateKeyPair
+import com.fahamutech.duaracore.utils.getHttpClient
 import com.fahamutech.duaracore.utils.stringToSHA256
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
@@ -15,10 +16,8 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 import retrofit2.Call
-import retrofit2.http.Body
-import retrofit2.http.Multipart
-import retrofit2.http.POST
-import retrofit2.http.Part
+import retrofit2.await
+import retrofit2.http.*
 import java.util.*
 
 interface AccountFunctions {
@@ -34,6 +33,14 @@ interface AccountFunctions {
 
     @POST("/account/token")
     fun updateToken(@Body data: UpdateTokenRequest): Call<String>
+
+    @GET("/services/{serviceId}/payment/subscription")
+    fun subscription(
+        @Path("serviceId") serviceId: Int?,
+        @Query("x") x: String?,
+        @Query("y") y: String?,
+        @Query("amount") amount: Int?
+    ): Call<Subscription>
 }
 
 suspend fun getIdentity(nickname: String, image: String, context: Context): UserModel {
@@ -76,6 +83,11 @@ suspend fun getDeviceId(contentResolver: ContentResolver): String {
     }
 }
 
+suspend fun getSubscription(request: SubscriptionRequest, context: Context): Subscription {
+    return getHttpClient(AccountFunctions::class.java, context).subscription(
+        x=request.x, y=request.y, serviceId = request.service, amount = request.amount
+    ).await()
+}
 
 
 

@@ -81,7 +81,8 @@ class SendImageMessagesWorker(context: Context, workerParameters: WorkerParamete
                         RequestBody.create(MediaType.parse("plain/text"), base64data.toByteArray())
                     )
                     val response =
-                        getHttpClient(MessageFunctions::class.java, applicationContext).uploadImage(filePart).await()
+                        getHttpClient(MessageFunctions::class.java, applicationContext)
+                            .uploadImage(filePart, applicationContext.getString(R.string.application_id)).await()
                     val url = applicationContext.resources.getString(R.string.base_server_url) + response.urls[0]
                     message.content = url
                     val outbox = encryptMessage(message, applicationContext)

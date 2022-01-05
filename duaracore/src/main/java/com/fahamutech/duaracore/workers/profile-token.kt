@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 import com.fahamutech.duaracore.models.UpdateTokenRequest
 
 
-private class UpdateProfileTokenWorker(context: Context, workerParameters: WorkerParameters) :
+class UpdateProfileTokenWorker(context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val storage = DuaraStorage.getInstance(applicationContext)

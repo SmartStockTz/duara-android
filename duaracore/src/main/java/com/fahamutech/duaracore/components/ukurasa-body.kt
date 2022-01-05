@@ -2,8 +2,6 @@ package com.fahamutech.duaracore.components
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absolutePadding
@@ -30,9 +28,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.canhub.cropper.CropImageContractOptions
-import com.canhub.cropper.CropImageView
-import com.canhub.cropper.options
 import com.fahamutech.duaracore.models.UserModel
 import com.fahamutech.duaracore.workers.startUploadAndUpdateProfilePicture
 
@@ -108,17 +103,6 @@ private fun UserName(user: UserModel) {
             )
         }
     }
-}
-
-fun cropImageStart(cropImage: ManagedActivityResultLauncher<CropImageContractOptions, CropImageView.CropResult>) {
-    cropImage.launch(
-        options {
-            setGuidelines(CropImageView.Guidelines.ON)
-            setAutoZoomEnabled(true)
-            setFixAspectRatio(true)
-            setAspectRatio(100, 100)
-        }
-    )
 }
 
 private fun updateName(name: String) {

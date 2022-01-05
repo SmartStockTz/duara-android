@@ -1,5 +1,6 @@
 package com.fahamutech.duaracore.pages
 
+import android.app.Activity
 import android.content.Context
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.*
@@ -12,7 +13,7 @@ import com.fahamutech.duaracore.utils.messageToApp
 import kotlinx.coroutines.launch
 
 @Composable
-fun UkurasaPage(context: Context, navController: NavController) {
+fun UkurasaPage(activity: Activity, navController: NavController) {
     val scope = rememberCoroutineScope()
     var user by remember { mutableStateOf<UserModel?>(null) }
     if (user !== null) {
@@ -23,12 +24,12 @@ fun UkurasaPage(context: Context, navController: NavController) {
     }
     LaunchedEffect("ukurasa_wangu") {
         scope.launch {
-            val storage = DuaraStorage.getInstance(context)
+            val storage = DuaraStorage.getInstance(activity.applicationContext)
             val uDao = storage.user()
             user = uDao.getUser()
             if (user === null) {
                 navController.popBackStack()
-                messageToApp("Imeshindwa jua wewe ni nani", context)
+                messageToApp("Imeshindwa jua wewe ni nani", activity.applicationContext)
             }
         }
     }

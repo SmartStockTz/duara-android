@@ -32,10 +32,9 @@ fun JiungePage(
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
         ) {
-            UserImage(user1) { uri: Uri?, context: Context ->
+            UserImage(user1) { uri: Uri?, _: Context ->
                 imageUri = uri
             }
-//            DuaraTitle()
             DuaraWelcomeText()
             NicknameInput(jiungeState)
             JiungeButton(imageUri, jiungeState, navController, context)

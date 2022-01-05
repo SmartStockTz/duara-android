@@ -33,7 +33,6 @@ class MaduaraState : ViewModel() {
                 _maduaraSyncProgress.value = false
             }) {
                 _maduaraSyncProgress.value = false
-//                Log.e("Sync results", it)
                 messageToApp(it, context)
             }
         }
@@ -48,7 +47,6 @@ class MaduaraState : ViewModel() {
                 _maduara.value = storage.maduara().getMaduara()
                 _maduaraSyncProgress.value = false
             }) {
-//                messageToApp(it, context)
                 _maduaraSyncProgress.value = false
             }
         }

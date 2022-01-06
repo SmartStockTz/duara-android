@@ -30,7 +30,10 @@ class ChatBillingWorker(
         if (runAttemptCount > 100) {
             return@withContext Result.failure()
         }
-        if (applicationContext.resources.getInteger(R.integer.chat_billing) <= 0) Result.success()
+        val chatBilling = applicationContext.resources.getInteger(R.integer.chat_billing)
+        if (chatBilling <= 0) {
+            return@withContext Result.success()
+        }
         val storage = DuaraStorage.getInstance(applicationContext)
         val maongeziString = inputData.getString("maongezi")
         val maongezi = Gson().fromJson(maongeziString, Maongezi::class.java)

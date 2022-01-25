@@ -3,7 +3,6 @@ package com.fahamutech.duaracore.models
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.fahamutech.duaracore.models.PubModel
 import java.util.*
 
 data class DuaraSync(
@@ -12,7 +11,8 @@ data class DuaraSync(
     var picture: String = "",
     var token: String = "",
     var device: String = "",
-    var maduara: List<String> = mutableListOf()
+    var maduara: List<String> = mutableListOf(),
+    var category: String = ""
 )
 
 @Entity(tableName = "maduara")
@@ -30,4 +30,15 @@ class DuaraLocal(
     var name: String = "",
     var normalizedNumber: String = ""
 )
+
+
+
+
+
+
+
+
+
+
+
 

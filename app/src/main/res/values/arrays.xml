@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="maduara_signatures">
-<!--        <item>duaraapp</item>-->
+        <item>Afya</item>
+        <item>Tehama</item>
+        <item>Biashara</item>
+        <item>Sheria</item>
+        <item>Mengineyo</item>
     </string-array>
 </resources>

@@ -31,10 +31,10 @@ class JiungeState : ViewModel() {
 
     fun jiunge(imageUri: Uri?, context: Activity, onFinish: () -> Unit) {
         val n = nickname.value
-        if (imageUri == null) {
-            messageToApp("Bofya ilo boksi apo juu kuweka picha", context);
-            return
-        }
+//        if (imageUri == null) {
+//            messageToApp("Bofya ilo boksi apo juu kuweka picha", context);
+//            return
+//        }
         if (n != null) {
             if (n.isEmpty().or(n.length < 3)) {
                 messageToApp("Jina linatakiwa liwe angalau herudi 3", context)
@@ -43,13 +43,18 @@ class JiungeState : ViewModel() {
                 viewModelScope.launch(Dispatchers.Main) {
                     withTryCatch(run = {
                         val cR = context.contentResolver
-                        val type = cR.getType(imageUri)
                         val path = imageUri.toString()
                         val u = getIdentity(nickname.value!!, "", context)
                         _user.value = u
-                        startUploadAndUpdateProfilePicture(path, type, context)
-                        onFinish()
-                        _getIdentityProgress.value = false
+                        if (imageUri == null) {
+                            onFinish()
+                            _getIdentityProgress.value = false
+                        } else {
+                            val type = cR.getType(imageUri)
+                            startUploadAndUpdateProfilePicture(path, type, context)
+                            onFinish()
+                            _getIdentityProgress.value = false
+                        }
                     }) {
                         messageToApp(it, context)
                     }

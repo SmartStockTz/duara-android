@@ -13,4 +13,7 @@ interface UserStorage {
 
     @Query("select * from user limit 1")
     suspend fun getUser(): UserModel?
+
+    @Query("delete from user")
+    suspend fun deleteAll()
 }

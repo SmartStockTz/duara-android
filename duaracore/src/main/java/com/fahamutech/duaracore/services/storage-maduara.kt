@@ -16,5 +16,5 @@ interface MaduaraStorage {
     @Query("select * from maduara order by nickname ASC")
     suspend fun getMaduara(): MutableList<DuaraRemote>
     @Query("delete from maduara")
-    fun deleteAll()
+    suspend fun deleteAll()
 }

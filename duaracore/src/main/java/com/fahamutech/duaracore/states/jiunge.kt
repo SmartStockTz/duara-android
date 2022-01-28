@@ -18,12 +18,17 @@ import kotlinx.coroutines.launch
 
 class JiungeState : ViewModel() {
     private val _getIdentityProgress = MutableLiveData(false)
+    private val _mtoaHudumaProgress = MutableLiveData(false)
     private val _user = MutableLiveData<UserModel?>(null)
     val getIdentityProgress: LiveData<Boolean> = _getIdentityProgress
+    val mtoaHudumaProgress: LiveData<Boolean> = _mtoaHudumaProgress
     val user: LiveData<UserModel?> = _user
 
     private val _nickname = MutableLiveData("")
     val nickname: LiveData<String> = _nickname
+
+    private val _password = MutableLiveData("")
+    val password: LiveData<String> = _password
 
     fun onNicknameChange(value: String) {
         _nickname.value = value
@@ -65,6 +70,35 @@ class JiungeState : ViewModel() {
         }
     }
 
+    fun jiungeMtoaHuduma(context: Activity, onFinish: () -> Unit) {
+        val n = nickname.value
+        val p = password.value
+        if (!n.isNullOrEmpty() && !p.isNullOrEmpty()) {
+            _mtoaHudumaProgress.value = true
+            viewModelScope.launch(Dispatchers.Main) {
+                withTryCatch(run = {
+//                    val cR = context.contentResolver
+//                    val path = imageUri.toString()
+//                    val u = getIdentity(nickname.value!!, "", context)
+//                    _user.value = u
+//                    if (imageUri == null) {
+//                        onFinish()
+//                        _getIdentityProgress.value = false
+//                    } else {
+//                        val type = cR.getType(imageUri)
+//                        startUploadAndUpdateProfilePicture(path, type, context)
+//                        onFinish()
+//                        _getIdentityProgress.value = false
+//                    }
+                }) {
+                    messageToApp(it, context)
+                }
+            }
+        } else {
+            messageToApp("Weka jina na nywila", context)
+        }
+    }
+
     fun loadUser(context: Context) {
         viewModelScope.launch {
             val u = DuaraStorage.getInstance(context).user().getUser()
@@ -74,5 +108,9 @@ class JiungeState : ViewModel() {
                 _user.value = u
             }
         }
+    }
+
+    fun onPasswordChange(it: String) {
+        _password.value = it
     }
 }

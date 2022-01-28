@@ -36,6 +36,7 @@ data class UserModel(
     var picture: String = "",
     var payment: Int = 0,
     var description: String = "",
+    var maduara: String = "",
     @Embedded(prefix = "pub_")
     var pub: PubModel? = PubModel(),
     @Embedded(prefix = "priv_")

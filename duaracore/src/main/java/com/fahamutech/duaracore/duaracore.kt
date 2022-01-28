@@ -59,6 +59,12 @@ fun DuaraCore(
                 navController = navController
             )
         }
+        composable("jiunge-mtoa-huduma") {
+            JiungeMtoaHudumaPage(
+                context = activity,
+                navController = navController
+            )
+        }
         composable("maongezi") {
             MaongeziPage(
                 navController = navController,

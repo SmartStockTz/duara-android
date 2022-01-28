@@ -29,7 +29,7 @@ fun JiungeButton(
     val onFetching by jiungeState.getIdentityProgress.observeAsState()
     Box(
         modifier = Modifier
-            .absolutePadding(40.dp, 16.dp, 24.dp, 100.dp)
+            .absolutePadding(24.dp, 16.dp, 24.dp, 16.dp)
             .fillMaxWidth()
     ) {
         Button(

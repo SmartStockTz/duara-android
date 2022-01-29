@@ -30,25 +30,26 @@ class ChatBillingWorker(
         if (runAttemptCount > 100) {
             return@withContext Result.failure()
         }
-        val chatBilling = applicationContext.resources.getInteger(R.integer.chat_billing)
+        val storage = DuaraStorage.getInstance(applicationContext)
+        val user = storage.user().getUser()
+        val chatBilling = user?.payment ?: 0
         if (chatBilling <= 0) {
             return@withContext Result.success()
         }
-        val storage = DuaraStorage.getInstance(applicationContext)
         val maongeziString = inputData.getString("maongezi")
         val maongezi = Gson().fromJson(maongeziString, Maongezi::class.java)
         if (maongezi == null) Result.success()
         val x = maongezi.receiver_pubkey?.x ?: "na"
         return@withContext try {
             var subscription = getLocalSubscription(applicationContext, x)
-            val user = storage.user().getUser()
             if (user == null) Result.success()
             if (subscription == null) {
                 val subsRequest = SubscriptionRequest(
                     user?.pub?.x,
                     user?.pub?.y,
                     applicationContext.resources.getInteger(R.integer.chat_service),
-                    applicationContext.resources.getInteger(R.integer.chat_billing)
+                    user?.payment ?: 0,
+                    mtoa_huduma_x = user?.pub?.x ?: ""
                 )
                 subscription = getSubscription(subsRequest, applicationContext)
                 updateLocalSubscription(subscription, x, applicationContext)
@@ -70,8 +71,6 @@ class ChatBillingWorker(
     }
 
     private fun getBillingMessage(subscription: Subscription, context: Context): String {
-//        val amount = context.resources.getInteger(R.integer.chat_billing)
-//        val service = context.resources.getInteger(R.integer.chat_service)
         return subscription.how ?: ""
     }
 
@@ -119,8 +118,3 @@ fun oneTimeSendBillingMessageWorker(): OneTimeWorkRequest {
             TimeUnit.MILLISECONDS
         ).build()
 }
-
-//fun startSendBillingMessageWorker(context: Context) {
-//    WorkManager.getInstance(context)
-//        .enqueue(oneTimeSendBillingMessageWorker())
-//}

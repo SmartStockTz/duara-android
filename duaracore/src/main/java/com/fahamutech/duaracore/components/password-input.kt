@@ -31,22 +31,15 @@ fun PasswordInput(jiungeState: JiungeState) {
                 .fillMaxHeight(),
             maxLines = 1,
             singleLine = true
-//            decorationBox = { innerTextField ->
-//                Row(
-//                    Modifier
-//                        .background(Color.LightGray, RoundedCornerShape(percent = 30))
-//                        .padding(16.dp)
-//                ) {
-//
-//                    if (password.isEmpty()) {
-//                        Text("password")
-//                    }
-//                    innerTextField()
-//                }
-//            },
         )
     }
 }
+
+private fun get_password(p: String): String {
+    return p.ifBlank { "nywila" }
+}
+
+
 
 
 

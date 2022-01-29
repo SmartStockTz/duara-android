@@ -23,7 +23,9 @@ open class DuaraRemote(
     var nickname: String = "",
     @Embedded(prefix = "pub_")
     var pub: PubModel? = PubModel(),
-    var picture: String = ""
+    var picture: String = "",
+    var description: String = "",
+    var category: String = ""
 )
 
 class DuaraLocal(

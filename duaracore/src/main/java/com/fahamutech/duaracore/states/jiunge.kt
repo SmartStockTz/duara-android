@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.fahamutech.duaracore.models.UserModel
 import com.fahamutech.duaracore.services.DuaraStorage
 import com.fahamutech.duaracore.services.getIdentity
+import com.fahamutech.duaracore.services.mtoaHudumaLogin
 import com.fahamutech.duaracore.utils.messageToApp
 import com.fahamutech.duaracore.utils.withTryCatch
 import com.fahamutech.duaracore.workers.startUploadAndUpdateProfilePicture
@@ -77,21 +78,12 @@ class JiungeState : ViewModel() {
             _mtoaHudumaProgress.value = true
             viewModelScope.launch(Dispatchers.Main) {
                 withTryCatch(run = {
-//                    val cR = context.contentResolver
-//                    val path = imageUri.toString()
-//                    val u = getIdentity(nickname.value!!, "", context)
-//                    _user.value = u
-//                    if (imageUri == null) {
-//                        onFinish()
-//                        _getIdentityProgress.value = false
-//                    } else {
-//                        val type = cR.getType(imageUri)
-//                        startUploadAndUpdateProfilePicture(path, type, context)
-//                        onFinish()
-//                        _getIdentityProgress.value = false
-//                    }
+                    mtoaHudumaLogin(n, p, context)
+                    onFinish()
+                    _mtoaHudumaProgress.value = false
                 }) {
                     messageToApp(it, context)
+                    _mtoaHudumaProgress.value = false
                 }
             }
         } else {

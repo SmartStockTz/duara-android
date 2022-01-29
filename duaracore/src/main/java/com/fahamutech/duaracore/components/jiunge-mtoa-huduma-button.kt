@@ -1,7 +1,6 @@
 package com.fahamutech.duaracore.components
 
 import android.app.Activity
-import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +20,6 @@ import com.fahamutech.duaracore.states.JiungeState
 
 @Composable
 fun JiungeMtoaHudumaButton(
-    imageUri: Uri?,
     jiungeState: JiungeState,
     navController: NavController,
     context: Activity
@@ -57,7 +55,7 @@ fun JiungeMtoaHudumaButton(
                 )
             } else {
                 Text(
-                    "Ingia kama mtoa huduma.",
+                    "Ingia.",
                     modifier = Modifier.fillMaxWidth(),
                     style = TextStyle(textAlign = TextAlign.Start),
                     fontWeight = FontWeight(500),

@@ -37,6 +37,7 @@ data class UserModel(
     var payment: Int = 0,
     var description: String = "",
     var maduara: String = "",
+    var type: String = "mteja",
     @Embedded(prefix = "pub_")
     var pub: PubModel? = PubModel(),
     @Embedded(prefix = "priv_")
@@ -63,8 +64,10 @@ class UpdateTokenRequest(
     var token: String? = null
 )
 
-
-
+class MtoaHudumaLoginRequest(
+    var username: String? = null,
+    var password: String? = null
+)
 
 
 

@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -169,11 +170,13 @@ fun MaduaraList(
             stickyHeader {
                 Box(
                     modifier = Modifier
-                        .background(Color(0xFFf5f5f5))
+                        .background(Color(0xFFDADADA))
                         .absolutePadding(16.dp, 8.dp, 16.dp, 8.dp)
                         .fillMaxWidth()
                 ) {
-                    Text(text = category)
+                    Text(text = category, style= TextStyle(
+                        color = Color.Black
+                    ))
                 }
             }
             items(contents) { d ->

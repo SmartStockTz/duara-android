@@ -6,6 +6,8 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.fahamutech.duaracore.pages.*
+import com.fahamutech.duaracore.services.syncContacts
 import com.fahamutech.duaracore.states.OngeziState
 import com.fahamutech.duaracore.utils.OPTIONS
 import com.fahamutech.duaracore.workers.startPeriodicalRetrieveMessageWorker
@@ -51,6 +54,7 @@ fun DuaraCore(
     onInit: () -> Unit = {}
 ) {
     onInit()
+    val context = LocalContext.current
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "maongezi") {
         composable("jiunge") {
@@ -98,5 +102,8 @@ fun DuaraCore(
                 activity = activity
             )
         }
+    }
+    LaunchedEffect("duara_app"){
+        syncContacts(context)
     }
 }

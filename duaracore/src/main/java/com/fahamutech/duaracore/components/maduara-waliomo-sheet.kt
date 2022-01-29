@@ -27,44 +27,17 @@ import com.skydoves.landscapist.coil.CoilImage
 import kotlinx.coroutines.launch
 import com.fahamutech.duaracore.R
 
-//
-//@ExperimentalFoundationApi
-//@ExperimentalMaterialApi
-//@Composable
-//fun MaduaraWaliomoSheetContent(duaraRemoteWaliomo: List<DuaraRemote>, navController: NavController) {
-//    Column(
-//        modifier = Modifier
-//            .padding(16.dp)
-//            .fillMaxWidth(),
-//    ) {
-//        WaliomoKwenyeDuaraHeader()
-//
-//    }
-//}
-
-@Composable
-fun WaliomoKwenyeDuaraHeader() {
-    Text(
-        text = "Chagua mtu kwenye ili duara wakuongea nae",
-        fontSize = 16.sp,
-        fontWeight = FontWeight(300),
-        lineHeight = 19.sp,
-        modifier = Modifier.absolutePadding(0.dp, 0.dp, 0.dp, 8.dp),
-        color = Color(0xFF989898)
-    )
-}
-
 @Composable
 fun DuaraMemberItem(duaraRemoteLocal: DuaraRemote, navController: NavController, context: Context) {
     val scope = rememberCoroutineScope()
-    Column(
+    Row(
         modifier = Modifier.clickable {
             scope.launch { startMaongeziNaMtu(duaraRemoteLocal, navController, context) }
-        }
+        }.absolutePadding(0.dp,8.dp,0.dp,8.dp)
     ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.absolutePadding(11.dp, 0.dp, 11.dp, 8.dp)
+            modifier = Modifier.absolutePadding(11.dp, 4.dp, 11.dp, 8.dp)
         ) {
             val imageUrl = duaraRemoteLocal.picture
             CoilImage(
@@ -74,25 +47,34 @@ fun DuaraMemberItem(duaraRemoteLocal: DuaraRemote, navController: NavController,
                 placeHolder = ImageVector.vectorResource(id = R.drawable.ic_member_duara),
                 error = ImageVector.vectorResource(id = R.drawable.ic_member_duara),
                 modifier = Modifier
-                    .size(80.dp)
-                    .clip(CircleShape.copy(CornerSize(20.dp))),
+                    .size(60.dp)
+                    .clip(CircleShape.copy(CornerSize(15.dp))),
             )
-//            Text(
-//                text = duaraRemoteLocal.nickname[0].toString(),
-//                fontWeight = FontWeight(500),
-//                color = Color.White,
-//                fontSize = 24.sp
-//            )
         }
-        Text(
-            text = duaraRemoteLocal.nickname,
-            fontWeight = FontWeight.Normal,
-            color = Color(0xFF8E8E8E),
-            fontSize = 14.sp,
-            textAlign = TextAlign.Center,
+        Column(
             modifier = Modifier.fillMaxWidth()
-                .absolutePadding(0.dp,0.dp,0.dp,8.dp)
-        )
+                .absolutePadding(4.dp,8.dp,4.dp,8.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = duaraRemoteLocal.nickname,
+                fontWeight = FontWeight.Normal,
+//                color = Color(0xFF8E8E8E),
+                fontSize = 16.sp,
+//                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+                    .absolutePadding(0.dp,0.dp,16.dp,2.dp)
+            )
+            Text(
+                text = duaraRemoteLocal.description,
+                fontWeight = FontWeight.Normal,
+                color = Color(0xFF8E8E8E),
+                fontSize = 14.sp,
+//                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+                    .absolutePadding(0.dp,0.dp,16.dp,8.dp)
+            )
+        }
     }
 }
 
@@ -114,28 +96,3 @@ private suspend fun startMaongeziNaMtu(
     }
 }
 
-//@Composable
-//private fun SearchWaliomoKwenyeDuara() {
-//    var searchKeyword by remember { mutableStateOf("") }
-//    Box(
-//        modifier = Modifier
-//            .absolutePadding(0.dp, 0.dp, 0.dp, 4.dp)
-//            .background(shape = RoundedCornerShape(4.dp), color = Color(0xE9ECECEC))
-//            .fillMaxWidth()
-//            .height(38.dp),
-//        contentAlignment = Alignment.Center
-//    ) {
-//        BasicTextField(
-//            value = searchKeyword,
-//            onValueChange = {
-//                searchKeyword = it
-////                maduaraState.searchDuara(searchKeyword, context)
-//            },
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .absolutePadding(8.dp),
-//            maxLines = 1,
-//            singleLine = true,
-//        )
-//    }
-//}

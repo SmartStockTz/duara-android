@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.work.*
 import com.fahamutech.duaracore.R
 import com.fahamutech.duaracore.models.Maongezi
+import com.fahamutech.duaracore.models.Message
 import com.fahamutech.duaracore.models.Subscription
 import com.fahamutech.duaracore.models.SubscriptionRequest
 import com.fahamutech.duaracore.services.DuaraStorage
@@ -37,6 +38,10 @@ class ChatBillingWorker(
             return@withContext Result.success()
         }
         val maongeziString = inputData.getString("maongezi")
+        val messageString = inputData.getString("message")
+        if (messageString?.contains("bfast.fahamutech.com/services") == true) {
+            return@withContext Result.success()
+        }
         val maongezi = Gson().fromJson(maongeziString, Maongezi::class.java)
         if (maongezi == null) Result.success()
         val x = maongezi.receiver_pubkey?.x ?: "na"
@@ -57,10 +62,7 @@ class ChatBillingWorker(
             if (isNotPaidOrExpire(subscription)) {
                 removeLocalSubscription(applicationContext, x)
                 saveMessageLocalForSend(
-                    maongezi,
-                    getBillingMessage(subscription, applicationContext),
-                    user!!,
-                    applicationContext
+                    maongezi, getBillingMessage(subscription), user!!, applicationContext
                 )
             }
             Result.success()
@@ -70,7 +72,7 @@ class ChatBillingWorker(
         }
     }
 
-    private fun getBillingMessage(subscription: Subscription, context: Context): String {
+    private fun getBillingMessage(subscription: Subscription): String {
         return subscription.how ?: ""
     }
 
@@ -118,3 +120,10 @@ fun oneTimeSendBillingMessageWorker(): OneTimeWorkRequest {
             TimeUnit.MILLISECONDS
         ).build()
 }
+
+
+
+
+
+
+

@@ -8,6 +8,7 @@ import androidx.work.*
 import com.fahamutech.duaracore.models.*
 import com.fahamutech.duaracore.services.*
 import com.fahamutech.duaracore.utils.*
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.await
@@ -15,8 +16,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.*
 import java.util.concurrent.TimeUnit
-import com.fahamutech.duaracore.R
-import com.google.gson.Gson
 
 class ReceiveMessagesWorker(context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
@@ -45,17 +44,28 @@ class RetrieveMessagesWorker(context: Context, workerParameters: WorkerParameter
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val storage = DuaraStorage.getInstance(applicationContext)
         return@withContext try {
-            if (runAttemptCount > 20) {
+            if (runAttemptCount > 100) {
                 Result.failure()
             } else {
-                var ongezi: Maongezi? = null
+                var handleMessageResponse: HandleMessageResponse? = null
                 val messagesSign = storage.messageCid().all()
                 if (messagesSign.isNotEmpty()) {
                     messagesSign.forEach {
-                        ongezi = handleNewMessage(it, storage, applicationContext)
+                        handleMessageResponse = handleNewMessage(it, storage, applicationContext)
                     }
                 }
-                Result.success(workDataOf("maongezi" to Gson().toJson(ongezi, Maongezi::class.java)))
+                Result.success(
+                    workDataOf(
+                        "maongezi" to Gson().toJson(
+                            handleMessageResponse?.maongezi,
+                            Maongezi::class.java
+                        ),
+                        "message" to Gson().toJson(
+                            handleMessageResponse?.message,
+                            Message::class.java
+                        )
+                    )
+                )
             }
         } catch (e: Exception) {
             Log.e("RETRIEVE CID ERROR", e.toString())
@@ -64,9 +74,14 @@ class RetrieveMessagesWorker(context: Context, workerParameters: WorkerParameter
     }
 }
 
+class HandleMessageResponse(
+    var maongezi: Maongezi? = null,
+    var message: Message? = null
+)
+
 private suspend fun handleNewMessage(
     message: MessageCID, storage: DuaraDatabase, context: Context
-): Maongezi? {
+): HandleMessageResponse? {
     return try {
         val messageFromCID = retrieveMessage(message.cid, context)
         var messageDecrypted = decryptMessage(messageFromCID, context)
@@ -96,13 +111,16 @@ private suspend fun handleNewMessage(
             storage.withTransaction {
                 storage.message().save(messageDecrypted)
                 storage.maongezi().updateOngeziLastSeen(ongeziId)
-                storage.messageCid().delete(message.cid ?: "")
+                storage.messageCid().delete(message.cid)
             }
         }
         if (OPTIONS.IS_VISIBLE) {
             playMessageSound(context)
         } else showMessageNotification(context, messageDecrypted)
-        ongezi
+        HandleMessageResponse(
+            maongezi = ongezi,
+            message = messageDecrypted
+        )
     } catch (e: Throwable) {
         e.printStackTrace()
         Log.e("Handle message", e.toString())

@@ -51,13 +51,8 @@ fun OngeziComposeBottomBar(
     context: Context,
 ) {
     var message by remember { mutableStateOf("") }
-    Surface(
-        elevation = 5.dp
-    ) {
-        Column(
-            modifier = Modifier
-                .absolutePadding(16.dp, 8.dp, 16.dp, 8.dp)
-        ) {
+    Surface(elevation = 5.dp) {
+        Column(modifier = Modifier.absolutePadding(16.dp, 8.dp, 16.dp, 8.dp)) {
             Box(
                 modifier = Modifier
                     .background(shape = RoundedCornerShape(4.dp), color = Color(0xFFF8F7F7))
@@ -67,17 +62,13 @@ fun OngeziComposeBottomBar(
             ) {
                 BasicTextField(
                     value = message,
-                    onValueChange = {
-                        message = it
-                    },
+                    onValueChange = { message = it },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
                     maxLines = 4,
                     singleLine = false,
-                    textStyle = TextStyle(
-                        fontSize = 16.sp
-                    )
+                    textStyle = TextStyle(fontSize = 16.sp)
                 )
                 if (message.isBlank()) {
                     Text(
@@ -93,9 +84,7 @@ fun OngeziComposeBottomBar(
             }
             Row {
                 UploadImage { x ->
-                    sendImageMessage(
-                        maongezi, ongeziState, x, user, context
-                    )
+                    sendImageMessage(maongezi, ongeziState, x, user, context)
                 }
                 Spacer(Modifier.weight(1.0f))
                 IconButton(
@@ -110,7 +99,6 @@ fun OngeziComposeBottomBar(
             }
         }
     }
-
 }
 
 fun sendMessage(
@@ -134,11 +122,16 @@ fun UploadImage(
     val context = LocalContext.current
     val cropImage = rememberLauncherForActivityResult(contract = CropImageContract()) { result ->
         if (result.isSuccessful) {
-            val file = getAppSpecificImageStorageDirFile(
-                result.uriContent,
-                result.getUriFilePath(context),
-                context
-            )
+            val file = try {
+                getAppSpecificImageStorageDirFile(
+                    result.uriContent,
+                    result.getUriFilePath(context),
+                    context
+                )
+            } catch (e: Exception) {
+                Log.e("APP DIR", e.toString())
+                null
+            }
             if (file != null) {
                 uploadImage(file.absolutePath)
             }
@@ -200,13 +193,16 @@ fun getImageStart(
 }
 
 fun getAppSpecificImageStorageDirFile(uri: Uri?, path: String?, context: Context): File? {
-    if (uri == null) {
-        return null
+    if (uri == null) return null
+    val scheme = uri.scheme
+    val ext = if (scheme == "file") {
+        uri.toString().substring(uri.toString().lastIndexOf("."))
+    } else {
+        val cR = context.contentResolver
+        val type = cR.getType(uri)
+        val mime = MimeTypeMap.getSingleton()
+        mime.getExtensionFromMimeType(type)
     }
-    val cR = context.contentResolver
-    val type = cR.getType(uri)
-    val mime = MimeTypeMap.getSingleton()
-    val ext = mime.getExtensionFromMimeType(type)
     val ins = context.contentResolver.openInputStream(uri)
     val imageName = if (ins != null) {
         "/sent/Duara-${getFileChecksum(MessageDigest.getInstance("MD5"), ins) ?: "nil"}.$ext"
@@ -244,13 +240,14 @@ fun getAppSpecificImageStorageDirFile(uri: Uri?, path: String?, context: Context
 //            val d = DocumentFile.fromSingleUri(context,uri)
 //            val n = d?.name
 //            d?.delete()
-            context.contentResolver.delete(uri, null, null)
+//            context.contentResolver.delete(uri, null, null)
 //            val n = DocumentsContract.deleteDocument(context.contentResolver,uri)
 //            Log.e("+++++++?d name", n.toString())
 //            uri.normalizeScheme()?.path?.let { Log.e("+++++++?path", it) }
+            if (scheme == "content")
+                context.contentResolver.delete(uri, null, null)
             File(path ?: "/na").delete()
         } catch (e: IOException) {
-//            e.printStackTrace()
             Log.e("+++++++?", e.toString())
         }
     }

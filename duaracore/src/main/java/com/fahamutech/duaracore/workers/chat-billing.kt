@@ -50,8 +50,8 @@ class ChatBillingWorker(
             if (user == null) Result.success()
             if (subscription == null) {
                 val subsRequest = SubscriptionRequest(
-                    user?.pub?.x,
-                    user?.pub?.y,
+                    maongezi?.receiver_pubkey?.x,
+                    maongezi.receiver_pubkey?.y,
                     applicationContext.resources.getInteger(R.integer.chat_service),
                     user?.payment ?: 0,
                     mtoa_huduma_x = user?.pub?.x ?: ""

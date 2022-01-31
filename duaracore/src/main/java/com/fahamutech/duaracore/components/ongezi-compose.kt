@@ -41,6 +41,9 @@ import com.fahamutech.duaracore.states.OngeziState
 import com.fahamutech.duaracore.utils.getFileChecksum
 import com.fahamutech.duaracore.utils.messageToApp
 import com.fahamutech.duaracore.utils.stringFromDate
+import com.google.gson.JsonObject
+import io.socket.client.Socket
+import org.json.JSONObject
 import java.io.*
 import java.security.MessageDigest
 import java.util.*
@@ -49,6 +52,7 @@ import java.util.*
 fun OngeziComposeBottomBar(
     maongezi: Maongezi, ongeziState: OngeziState, user: UserModel,
     context: Context,
+    socket: Socket?,
 ) {
     var message by remember { mutableStateOf("") }
     Surface(elevation = 5.dp) {
@@ -62,7 +66,16 @@ fun OngeziComposeBottomBar(
             ) {
                 BasicTextField(
                     value = message,
-                    onValueChange = { message = it },
+                    onValueChange = {
+                        message = it
+                        val gson = JSONObject()
+                        val gsonBody = JSONObject()
+                        gsonBody.put("s_x", user.pub?.x)
+                        gsonBody.put("r_x", Math.random().toString().replace(".", ""))
+                        gsonBody.put("type", "t")
+                        gson.put("body", gsonBody)
+                        socket?.emit("/presence", gson)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),

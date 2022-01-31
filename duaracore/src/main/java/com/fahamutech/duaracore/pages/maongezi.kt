@@ -15,6 +15,7 @@ import com.fahamutech.duaracore.components.MaongeziTopBar
 import com.fahamutech.duaracore.models.Maongezi
 import com.fahamutech.duaracore.models.UserModel
 import com.fahamutech.duaracore.services.DuaraStorage
+import com.fahamutech.duaracore.services.onlineStatus
 import com.fahamutech.duaracore.states.MaongeziState
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -56,6 +57,7 @@ fun MaongeziPage(
     }
     DisposableEffect("maongezi-page") {
         val storage = DuaraStorage.getInstance(context)
+        val socket: io.socket.client.Socket? = null
         val s = scope.launch {
             user = storage.user().getUser()
             if (user == null) {
@@ -66,12 +68,15 @@ fun MaongeziPage(
                     launchSingleTop = true
                 }
             } else {
+                onlineStatus(user, context)
                 storage.maongezi().getMaongezi().collect {
                     maongezi.value = it
                 }
             }
         }
         onDispose {
+            socket?.disconnect()
+            socket?.off()
             s.cancel()
         }
     }

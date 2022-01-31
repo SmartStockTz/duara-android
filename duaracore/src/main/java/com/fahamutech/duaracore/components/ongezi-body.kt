@@ -13,13 +13,15 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.fahamutech.duaracore.models.Maongezi
 import com.fahamutech.duaracore.models.UserModel
 import com.fahamutech.duaracore.states.OngeziState
+import io.socket.client.Socket
 
 @Composable
 fun OngeziBody(
     ongeziState: OngeziState,
     maongezi: Maongezi,
     user: UserModel,
-    context: Context
+    context: Context,
+    socket: Socket?
 ) {
     val messages by ongeziState.messages.observeAsState(initial = mutableListOf())
     val nestedScrollConnection = remember {
@@ -35,6 +37,6 @@ fun OngeziBody(
             modifier = Modifier.weight(1f),
             user = user
         )
-        OngeziComposeBottomBar(maongezi, ongeziState, user, context)
+        OngeziComposeBottomBar(maongezi, ongeziState, user, context, socket)
     }
 }

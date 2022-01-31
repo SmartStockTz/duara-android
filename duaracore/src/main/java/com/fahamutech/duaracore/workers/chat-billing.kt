@@ -19,7 +19,7 @@ import java.lang.Exception
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-private val SUB_PREF_NAME = "iyiutiti87t87tuysubscription"
+private const val SUB_PREF_NAME = "iyiutiti87t87tuysubscription"
 private val constraints = Constraints.Builder()
     .setRequiredNetworkType(NetworkType.CONNECTED)
     .build()

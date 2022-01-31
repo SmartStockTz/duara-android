@@ -17,7 +17,7 @@ fun NicknameInput(jiungeState: JiungeState) {
 //    val nicknameFocus = FocusRequester()
     Box(
         modifier = Modifier
-            .absolutePadding(41.dp, 16.dp, 24.dp, 0.dp)
+            .absolutePadding(24.dp, 16.dp, 24.dp, 0.dp)
             .background(shape = RoundedCornerShape(4.dp), color = Color(0xFFF7F7F7))
             .fillMaxWidth()
             .height(40.dp)

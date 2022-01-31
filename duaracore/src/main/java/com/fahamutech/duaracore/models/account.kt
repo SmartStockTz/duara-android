@@ -34,12 +34,15 @@ data class UserModel(
     var nickname: String = "",
     var token: String = "",
     var picture: String = "",
+    var payment: Int = 0,
+    var description: String = "",
+    var maduara: String = "",
+    var type: String = "mteja",
     @Embedded(prefix = "pub_")
     var pub: PubModel? = PubModel(),
     @Embedded(prefix = "priv_")
     var priv: PrivModel? = PrivModel()
 )
-
 
 class XY(
     var x: String? = null,
@@ -61,8 +64,10 @@ class UpdateTokenRequest(
     var token: String? = null
 )
 
-
-
+class MtoaHudumaLoginRequest(
+    var username: String? = null,
+    var password: String? = null
+)
 
 
 

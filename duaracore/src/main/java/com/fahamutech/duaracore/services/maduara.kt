@@ -164,7 +164,7 @@ suspend fun syncContacts(context: Context): MutableList<DuaraRemote> {
             val maduaraSignatures: Array<String> =
                 context.resources.getStringArray(R.array.maduara_signatures)
             val contacts =
-                if (maduaraSignatures.isEmpty()) normalisedNumberSignatures(context).toTypedArray()
+                if (maduaraSignatures.isEmpty()) arrayOf(getDeviceId(context.contentResolver))
                 else maduaraSignatures.map { stringToSHA256(it) }.toTypedArray()
             val syncSendModel = DuaraSync()
             syncSendModel.maduara = contacts.toList()

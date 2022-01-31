@@ -4,10 +4,7 @@ import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.GridCells
-import androidx.compose.foundation.lazy.LazyVerticalGrid
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
@@ -24,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -147,7 +145,7 @@ private fun TopBarSearch(
 @Composable
 fun HelperMessage() {
     Text(
-        text = "Marafiki wa rafiki zako.",
+        text = "Chagua mtoa huduma wa kuongea nae.",
         fontWeight = FontWeight(300),
         fontSize = 14.sp,
         modifier = Modifier
@@ -163,13 +161,27 @@ fun MaduaraList(
     maduara: List<DuaraRemote>, navController: NavController, context: Context
 ) {
     val st = rememberLazyListState()
-    LazyVerticalGrid(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        cells = GridCells.Adaptive(minSize = 102.dp),
+    LazyColumn(
+//        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+//        cells = GridCells.Adaptive(minSize = 102.dp),
         state = st
     ) {
-        items(maduara) { d ->
-            DuaraMemberItem(d, navController, context)
+        maduara.groupBy { it.category }.forEach { (category, contents) ->
+            stickyHeader {
+                Box(
+                    modifier = Modifier
+                        .background(Color(0xFFDADADA))
+                        .absolutePadding(16.dp, 8.dp, 16.dp, 8.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(text = category, style= TextStyle(
+                        color = Color.Black
+                    ))
+                }
+            }
+            items(contents) { d ->
+                DuaraMemberItem(d, navController, context)
+            }
         }
     }
 }

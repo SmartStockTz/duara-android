@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,12 +63,30 @@ private fun ActionsView(navController: NavController) {
         expanded = showMenu.value,
         onDismissRequest = { showMenu.value = false }
     ) {
+        val scope = rememberCoroutineScope()
+        val context = LocalContext.current
         DropdownMenuItem(onClick = {
             navController.navigate("ukurasa"){
                 launchSingleTop = true
             }
         }) {
-            Text(text = "Picha & Jina")
+            Text(text = "Picha & Jina.")
+        }
+        DropdownMenuItem(onClick = {
+           scope.launch {
+               val storage = DuaraStorage.getInstance(context)
+               storage.user().deleteAll()
+               storage.maongezi().deleteAll()
+               storage.maduara().deleteAll()
+               storage.message().deleteAll()
+               storage.messageCid().deleteAll()
+               storage.messageOutbox().deleteAll()
+               navController.navigate("jiunge"){
+                   launchSingleTop = true
+               }
+           }
+        }) {
+            Text(text = "Toka.")
         }
     }
 }

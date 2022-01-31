@@ -6,17 +6,18 @@ import android.content.Context
 import android.provider.Settings
 import android.util.Log
 import com.fahamutech.duaracore.models.*
-import com.fahamutech.duaracore.services.DuaraStorage
 import com.fahamutech.duaracore.utils.generateKeyPair
 import com.fahamutech.duaracore.utils.getHttpClient
 import com.fahamutech.duaracore.utils.stringToSHA256
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.await
+import retrofit2.awaitResponse
 import retrofit2.http.*
 import java.util.*
 
@@ -39,8 +40,12 @@ interface AccountFunctions {
         @Path("serviceId") serviceId: Int?,
         @Query("x") x: String?,
         @Query("y") y: String?,
-        @Query("amount") amount: Int?
+        @Query("amount") amount: Int?,
+        @Query("mtoa_huduma_x") mtoa_huduma_x: String?
     ): Call<Subscription>
+
+    @POST("/account/login")
+    fun mtoaHudumaLogin(@Body data: MtoaHudumaLoginRequest): Call<UserModel>
 }
 
 suspend fun getIdentity(nickname: String, image: String, context: Context): UserModel {
@@ -85,11 +90,26 @@ suspend fun getDeviceId(contentResolver: ContentResolver): String {
 
 suspend fun getSubscription(request: SubscriptionRequest, context: Context): Subscription {
     return getHttpClient(AccountFunctions::class.java, context).subscription(
-        x=request.x, y=request.y, serviceId = request.service, amount = request.amount
+        x = request.x, y = request.y, serviceId = request.service, amount = request.amount,
+        mtoa_huduma_x = request.mtoa_huduma_x
     ).await()
 }
 
-
+suspend fun mtoaHudumaLogin(username: String, password: String, context: Context): UserModel {
+    val data = MtoaHudumaLoginRequest(username, password)
+    val userResponse =
+        getHttpClient(AccountFunctions::class.java, context).mtoaHudumaLogin(data).awaitResponse()
+    return if (userResponse.isSuccessful) {
+        val user = userResponse.body() ?: throw Throwable("hakuna huyo mtoa huduma")
+        val storage = DuaraStorage.getInstance(context)
+        user.type = "mtoa_huduma"
+        storage.user().saveUser(user)
+        user
+    } else {
+        val error = Gson().fromJson(userResponse.errorBody()?.string(), MutableMap::class.java)
+        throw Throwable(error["message"].toString())
+    }
+}
 
 
 

@@ -28,6 +28,9 @@ interface MaongeziStorage {
 
     @Query("delete from maongezi where id is (:id)")
     suspend fun futaOngeziInStore(id: String)
+
+    @Query("delete from maongezi")
+    suspend fun deleteAll()
 //    {
 //        withContext(Dispatchers.IO) {
 //            getRealm().executeTransaction {

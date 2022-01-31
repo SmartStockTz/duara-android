@@ -26,8 +26,8 @@ fun UpoMwenyeweDialog(maduaraState: MaduaraState, context: Context) {
             .fillMaxWidth()
     ) {
         Text(
-            text = "Hamna mtu aliepo kwenye duara app mwenye namba yako ata " +
-                "moja kati ya zilizopo kwenye simu. Unaweza alika marafiki.",
+            text = "Hamna watoa huduma waliopo kwa sasa, angalia mtandao wako wa" +
+                    " intenet kisha jaribu tena.",
             fontWeight = FontWeight(300),
             fontSize = 14.sp,
             modifier = Modifier.fillMaxWidth(),
@@ -39,11 +39,11 @@ fun UpoMwenyeweDialog(maduaraState: MaduaraState, context: Context) {
             }) {
                 Text(text = "Jaribu tena")
             }
-            TextButton(onClick = {
-                shareApp(context)
-            }) {
-                Text(text = "Alika marafiki")
-            }
+//            TextButton(onClick = {
+//                shareApp(context)
+//            }) {
+//                Text(text = "Alika marafiki")
+//            }
         }
     }
 }

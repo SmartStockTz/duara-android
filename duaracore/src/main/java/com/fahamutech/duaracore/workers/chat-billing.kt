@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.work.*
 import com.fahamutech.duaracore.R
 import com.fahamutech.duaracore.models.Maongezi
+import com.fahamutech.duaracore.models.Message
 import com.fahamutech.duaracore.models.Subscription
 import com.fahamutech.duaracore.models.SubscriptionRequest
 import com.fahamutech.duaracore.services.DuaraStorage
@@ -18,7 +19,7 @@ import java.lang.Exception
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-private val SUB_PREF_NAME = "iyiutiti87t87tuysubscription"
+private const val SUB_PREF_NAME = "iyiutiti87t87tuysubscription"
 private val constraints = Constraints.Builder()
     .setRequiredNetworkType(NetworkType.CONNECTED)
     .build()
@@ -30,25 +31,30 @@ class ChatBillingWorker(
         if (runAttemptCount > 100) {
             return@withContext Result.failure()
         }
-        val chatBilling = applicationContext.resources.getInteger(R.integer.chat_billing)
+        val storage = DuaraStorage.getInstance(applicationContext)
+        val user = storage.user().getUser()
+        val chatBilling = user?.payment ?: 0
         if (chatBilling <= 0) {
             return@withContext Result.success()
         }
-        val storage = DuaraStorage.getInstance(applicationContext)
         val maongeziString = inputData.getString("maongezi")
+        val messageString = inputData.getString("message")
+        if (messageString?.contains("bfast.fahamutech.com/services") == true) {
+            return@withContext Result.success()
+        }
         val maongezi = Gson().fromJson(maongeziString, Maongezi::class.java)
         if (maongezi == null) Result.success()
         val x = maongezi.receiver_pubkey?.x ?: "na"
         return@withContext try {
             var subscription = getLocalSubscription(applicationContext, x)
-            val user = storage.user().getUser()
             if (user == null) Result.success()
             if (subscription == null) {
                 val subsRequest = SubscriptionRequest(
-                    user?.pub?.x,
-                    user?.pub?.y,
+                    maongezi?.receiver_pubkey?.x,
+                    maongezi.receiver_pubkey?.y,
                     applicationContext.resources.getInteger(R.integer.chat_service),
-                    applicationContext.resources.getInteger(R.integer.chat_billing)
+                    user?.payment ?: 0,
+                    mtoa_huduma_x = user?.pub?.x ?: ""
                 )
                 subscription = getSubscription(subsRequest, applicationContext)
                 updateLocalSubscription(subscription, x, applicationContext)
@@ -56,10 +62,7 @@ class ChatBillingWorker(
             if (isNotPaidOrExpire(subscription)) {
                 removeLocalSubscription(applicationContext, x)
                 saveMessageLocalForSend(
-                    maongezi,
-                    getBillingMessage(subscription, applicationContext),
-                    user!!,
-                    applicationContext
+                    maongezi, getBillingMessage(subscription), user!!, applicationContext
                 )
             }
             Result.success()
@@ -69,9 +72,7 @@ class ChatBillingWorker(
         }
     }
 
-    private fun getBillingMessage(subscription: Subscription, context: Context): String {
-//        val amount = context.resources.getInteger(R.integer.chat_billing)
-//        val service = context.resources.getInteger(R.integer.chat_service)
+    private fun getBillingMessage(subscription: Subscription): String {
         return subscription.how ?: ""
     }
 
@@ -120,7 +121,9 @@ fun oneTimeSendBillingMessageWorker(): OneTimeWorkRequest {
         ).build()
 }
 
-//fun startSendBillingMessageWorker(context: Context) {
-//    WorkManager.getInstance(context)
-//        .enqueue(oneTimeSendBillingMessageWorker())
-//}
+
+
+
+
+
+

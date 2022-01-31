@@ -37,6 +37,8 @@ interface MessageStorage {
 
     @Query("delete from message where maongezi_id is (:ongeziId)")
     suspend fun deleteMaongeziMessages(ongeziId: String)
+    @Query("delete from message")
+    suspend fun deleteAll()
 }
 
 @Dao
@@ -49,6 +51,9 @@ interface MessageOutBoxStorage {
 
     @Query("delete from message_outbox where id is (:id)")
     suspend fun deleteById(id: String)
+
+    @Query("delete from message_outbox")
+    suspend fun deleteAll()
 }
 
 @Dao
@@ -61,6 +66,9 @@ interface MessageCidStorage {
 
     @Query("delete from message_cid where cid is (:cid)")
     suspend fun delete(cid: String)
+
+    @Query("delete from message_cid")
+    suspend fun deleteAll()
 }
 
 

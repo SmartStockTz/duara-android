@@ -1,6 +1,7 @@
 package com.fahamutech.duaracore.components
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,24 +19,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.fahamutech.duaracore.models.Maongezi
+import com.fahamutech.duaracore.models.PresenceBody
+import com.fahamutech.duaracore.models.PresenceResponse
+import com.fahamutech.duaracore.services.DuaraStorage
+import com.fahamutech.duaracore.services.PresenceSocket
+import com.fahamutech.duaracore.services.syncContacts
 import com.fahamutech.duaracore.states.OngeziState
+import com.fahamutech.duaracore.utils.withTryCatch
+import com.google.gson.Gson
+import io.socket.client.Socket
+import io.socket.emitter.Emitter
+import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 @Composable
 fun OngeziTopBar(
     maongezi: Maongezi, ongeziState: OngeziState,
-    context: Context, navController: NavController
+    context: Context, navController: NavController,
+    status: String
 ) {
 //    var inSearchMode by remember { mutableStateOf(false) }
     Box {
 //        if (!inSearchMode) {
-            OngeziTopBarNormal(maongezi, navController) {
+        OngeziTopBarNormal(maongezi, navController, status) {
 //                inSearchMode = true
-            }
+        }
 //        } else {
 //            OngeziTopBarSearch(ongeziState, context) {
 //                inSearchMode = false
@@ -47,21 +61,33 @@ fun OngeziTopBar(
 @Composable
 private fun OngeziTopBarNormal(
     maongezi: Maongezi,
-    navController: NavController, onSearchClick: () -> Unit
+    navController: NavController,
+    status: String,
+    onSearchClick: () -> Unit
 ) {
     TopAppBar {
+        val context = LocalContext.current
+        val scope = rememberCoroutineScope()
         IconButton(onClick = {
             navController.popBackStack()
         }) {
             Icon(Icons.Sharp.ArrowBack, "back")
         }
-        Text(
-            text = maongezi.receiver_nickname,
-            fontSize = 24.sp,
-            fontWeight = FontWeight(500),
-            lineHeight = 36.sp,
-            modifier = Modifier.absolutePadding(16.dp)
-        )
+        Column {
+            Text(
+                text = maongezi.receiver_nickname,
+                fontSize = 24.sp,
+                fontWeight = FontWeight(500),
+                lineHeight = 36.sp,
+                modifier = Modifier.absolutePadding(16.dp)
+            )
+            Text(
+                text = status,
+                fontSize = 14.sp,
+                fontWeight = FontWeight(300),
+                modifier = Modifier.absolutePadding(16.dp)
+            )
+        }
         Spacer(modifier = Modifier.weight(1.0f))
 //        IconButton(onClick = {
 //            onSearchClick()

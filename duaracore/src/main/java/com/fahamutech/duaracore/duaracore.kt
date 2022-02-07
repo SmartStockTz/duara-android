@@ -1,6 +1,5 @@
 package com.fahamutech.duaracore
 
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -18,7 +17,6 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.fahamutech.duaracore.pages.*
 import com.fahamutech.duaracore.services.DuaraStorage
-import com.fahamutech.duaracore.services.PresenceSocket
 import com.fahamutech.duaracore.services.onlineStatus
 import com.fahamutech.duaracore.services.syncContacts
 import com.fahamutech.duaracore.states.OngeziState
@@ -27,10 +25,8 @@ import com.fahamutech.duaracore.utils.withTryCatch
 import com.fahamutech.duaracore.workers.startPeriodicalRetrieveMessageWorker
 import com.fahamutech.duaracore.workers.startPeriodicalSendMessageWorker
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.gson.Gson
 import io.socket.client.Socket
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 
 abstract class DuaraCoreActivity : ComponentActivity() {
 

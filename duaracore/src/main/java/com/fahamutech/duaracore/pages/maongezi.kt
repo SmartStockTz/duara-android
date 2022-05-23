@@ -8,10 +8,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.runtime.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.fahamutech.duaracore.components.MaongeziEmpty
-import com.fahamutech.duaracore.components.MaongeziList
-import com.fahamutech.duaracore.components.MaongeziMapyaFAB
-import com.fahamutech.duaracore.components.MaongeziTopBar
+import com.fahamutech.duaracore.components.*
 import com.fahamutech.duaracore.models.Maongezi
 import com.fahamutech.duaracore.models.UserModel
 import com.fahamutech.duaracore.services.DuaraStorage
@@ -27,6 +24,7 @@ fun MaongeziPage(
     maongeziState: MaongeziState = viewModel(),
     navController: NavController,
     context: Context,
+    route: String,
     hudumaList: @Composable () -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
@@ -34,19 +32,14 @@ fun MaongeziPage(
     var user: UserModel? by remember { mutableStateOf(null) }
     if (user != null) {
         Scaffold(
-            topBar = {
-                MaongeziTopBar(context, navController)
-            },
-            floatingActionButton = {
-                MaongeziMapyaFAB(navController)
-            },
+            topBar = { MaongeziTopBar(context, navController) },
+//            floatingActionButton = { MaongeziMapyaFAB(navController) },
+            bottomBar = { DuaraBottomNav(navController)},
             content = {
                 Column {
                     hudumaList()
                     if (maongezi.value != null) {
-                        if (maongezi.value!!.isEmpty()) {
-                            MaongeziEmpty()
-                        }
+                        if (maongezi.value!!.isEmpty()) { MaongeziEmpty() }
                         if (maongezi.value!!.isNotEmpty()) {
                             MaongeziList(maongezi.value!!, maongeziState, navController, context)
                         }

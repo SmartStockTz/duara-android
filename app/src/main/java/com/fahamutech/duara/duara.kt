@@ -1,13 +1,12 @@
 package com.fahamutech.duara
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Row
-import androidx.compose.material.*
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import com.fahamutech.duara.ui.theme.DuaraTheme
 import com.fahamutech.duaracore.DuaraCore
@@ -24,7 +23,6 @@ class DuaraAppActivity : DuaraCoreActivity() {
 }
 
 
-
 @Composable
 fun DuaraApp(
     activity: ComponentActivity,
@@ -32,7 +30,13 @@ fun DuaraApp(
 ) {
     DuaraTheme {
         Surface(color = MaterialTheme.colors.background) {
-            DuaraCore(activity, ongeziState)
+            DuaraCore(
+                activity,
+                ongeziState,
+//                maduaraPage = {
+//                    Text(text = "Fuck yeaah!")
+//                }
+            )
         }
     }
 }

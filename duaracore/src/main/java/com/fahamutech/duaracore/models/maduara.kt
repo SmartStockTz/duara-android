@@ -5,6 +5,11 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.util.*
 
+data class MetaDataModel(
+    var age: String = "",
+    var gender: String = ""
+)
+
 data class DuaraSync(
     var nickname: String = "",
     var pub: PubModel = PubModel(),
@@ -12,7 +17,8 @@ data class DuaraSync(
     var token: String = "",
     var device: String = "",
     var maduara: List<String> = mutableListOf(),
-    var category: String = ""
+    var category: String = "",
+    var meta: MetaDataModel = MetaDataModel()
 )
 
 @Entity(tableName = "maduara")
@@ -28,10 +34,10 @@ open class DuaraRemote(
     var category: String = ""
 )
 
-class DuaraLocal(
-    var name: String = "",
-    var normalizedNumber: String = ""
-)
+//class DuaraLocal(
+//    var name: String = "",
+//    var normalizedNumber: String = ""
+//)
 
 
 

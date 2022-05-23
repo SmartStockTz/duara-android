@@ -32,6 +32,8 @@ data class UserModel(
     @PrimaryKey
     var id: String = "duara_user",
     var nickname: String = "",
+    var age: String = "",
+    var gender: String = "",
     var token: String = "",
     var picture: String = "",
     var payment: Int = 0,

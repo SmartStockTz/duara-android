@@ -42,11 +42,11 @@ fun JiungePage(
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
         ) {
-            UserImage(user1) { uri: Uri?, _: Context ->
-                imageUri = uri
-            }
+            UserImage(user1) { uri: Uri?, _: Context -> imageUri = uri }
             DuaraWelcomeText()
-            NicknameInput(jiungeState)
+            NicknameInput(jiungeState, "Jina")
+            AgeInput(jiungeState, "Umri")
+            GenderInput(jiungeState, "Jinsia")
             JiungeButton(imageUri, jiungeState, navController, context)
             MtoaHudumaLink(navController)
         }

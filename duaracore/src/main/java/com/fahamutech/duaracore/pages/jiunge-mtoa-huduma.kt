@@ -54,7 +54,7 @@ fun JiungeMtoaHudumaPage(
                         .verticalScroll(rememberScrollState())
                 ) {
                     DuaraMtoaHudumaWelcomeText()
-                    NicknameInput(jiungeState)
+                    NicknameInput(jiungeState, "Barua pepe")
                     PasswordInput(jiungeState)
                     JiungeMtoaHudumaButton(jiungeState, navController, context)
                 }

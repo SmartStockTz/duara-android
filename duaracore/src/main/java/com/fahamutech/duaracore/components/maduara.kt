@@ -55,11 +55,11 @@ private fun TopBarNormal(
 ) {
     val syncMaduaraProgress by maduaraState.maduaraSyncProgress.observeAsState()
     TopAppBar {
-        IconButton(onClick = {
-            navController.popBackStack()
-        }) {
-            Icon(Icons.Sharp.ArrowBack, "back")
-        }
+//        IconButton(onClick = {
+//            navController.popBackStack()
+//        }) {
+//            Icon(Icons.Sharp.ArrowBack, "back")
+//        }
         Text(
             text = "Maduara",
             fontSize = 24.sp,
@@ -162,9 +162,8 @@ fun MaduaraList(
 ) {
     val st = rememberLazyListState()
     LazyColumn(
-//        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-//        cells = GridCells.Adaptive(minSize = 102.dp),
-        state = st
+        state = st,
+        modifier = Modifier.padding(bottom = 54.dp)
     ) {
         maduara.groupBy { it.category }.forEach { (category, contents) ->
             stickyHeader {

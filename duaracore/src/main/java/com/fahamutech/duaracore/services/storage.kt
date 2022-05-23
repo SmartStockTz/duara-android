@@ -17,7 +17,7 @@ import com.fahamutech.duaracore.models.*
         MessageCID::class,
         MessageOutBox::class
     ],
-    version = 2
+    version = 3
 )
 
 abstract class DuaraDatabase : RoomDatabase() {
@@ -34,7 +34,7 @@ object DuaraStorage {
         return Room.databaseBuilder(
             context, DuaraDatabase::class.java, "duara-db"
         ).enableMultiInstanceInvalidation()
-            .addMigrations(MIGRATION_1_2)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_1_3)
             .build()
     }
 }
@@ -50,8 +50,25 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
     }
 }
 
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("ALTER TABLE user ADD COLUMN age TEXT NOT NULL DEFAULT ''")
+        database.execSQL("ALTER TABLE user ADD COLUMN gender TEXT NOT NULL DEFAULT ''")
+    }
+}
 
-
+val MIGRATION_1_3 = object : Migration(1, 3) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("ALTER TABLE user ADD COLUMN payment INTEGER NOT NULL DEFAULT 0")
+        database.execSQL("ALTER TABLE user ADD COLUMN description TEXT NOT NULL DEFAULT '' ")
+        database.execSQL("ALTER TABLE user ADD COLUMN maduara TEXT NOT NULL DEFAULT '' ")
+        database.execSQL("ALTER TABLE user ADD COLUMN type TEXT NOT NULL DEFAULT 'mteja' ")
+        database.execSQL("ALTER TABLE maduara ADD COLUMN description TEXT NOT NULL DEFAULT '' ")
+        database.execSQL("ALTER TABLE maduara ADD COLUMN category TEXT NOT NULL DEFAULT '' ")
+        database.execSQL("ALTER TABLE user ADD COLUMN age TEXT NOT NULL DEFAULT ''")
+        database.execSQL("ALTER TABLE user ADD COLUMN gender TEXT NOT NULL DEFAULT ''")
+    }
+}
 
 
 

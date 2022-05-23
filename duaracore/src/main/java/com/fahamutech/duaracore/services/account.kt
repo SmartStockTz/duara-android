@@ -48,21 +48,30 @@ interface AccountFunctions {
     fun mtoaHudumaLogin(@Body data: MtoaHudumaLoginRequest): Call<UserModel>
 }
 
-suspend fun getIdentity(nickname: String, image: String, context: Context): UserModel {
-    return withContext(Dispatchers.IO) {
-        val storage = DuaraStorage.getInstance(context)
-        val identityModel = generateKeyPair()
-        val token = getFcmToken()
-        val user = UserModel(
-            nickname = nickname,
-            picture = image,
-            priv = identityModel.priv,
-            pub = identityModel.pub,
-            token = token
-        )
-        storage.user().saveUser(user)
-        return@withContext user
-    }
+suspend fun getIdentity(
+    nickname: String,
+    age: String,
+    gender: String,
+    image: String,
+    context: Context
+): UserModel {
+//    return withContext(Dispatchers.IO) {
+    val storage = DuaraStorage.getInstance(context)
+    val identityModel = generateKeyPair()
+    val token = getFcmToken()
+    val user = UserModel(
+        nickname = nickname,
+        age = age,
+        gender = gender,
+        picture = image,
+        priv = identityModel.priv,
+        pub = identityModel.pub,
+        token = token
+    )
+    storage.user().saveUser(user)
+    return user
+//        return@withContext user
+//    }
 }
 
 suspend fun getFcmToken(): String {

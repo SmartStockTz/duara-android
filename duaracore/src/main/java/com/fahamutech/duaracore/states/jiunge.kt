@@ -28,6 +28,12 @@ class JiungeState : ViewModel() {
     private val _nickname = MutableLiveData("")
     val nickname: LiveData<String> = _nickname
 
+    private val _age = MutableLiveData("")
+    val age: LiveData<String> = _age
+
+    private val _gender = MutableLiveData("")
+    val gender: LiveData<String> = _gender
+
     private val _password = MutableLiveData("")
     val password: LiveData<String> = _password
 
@@ -35,39 +41,57 @@ class JiungeState : ViewModel() {
         _nickname.value = value
     }
 
+    fun onAgeChange(it: String) {
+        _age.value = it
+    }
+
+    fun onGenderChange(it: String) {
+        _gender.value = it
+    }
+
+    fun onPasswordChange(it: String) {
+        _password.value = it
+    }
+
     fun jiunge(imageUri: Uri?, context: Activity, onFinish: () -> Unit) {
         val n = nickname.value
-//        if (imageUri == null) {
-//            messageToApp("Bofya ilo boksi apo juu kuweka picha", context);
-//            return
-//        }
-        if (n != null) {
-            if (n.isEmpty().or(n.length < 3)) {
-                messageToApp("Jina linatakiwa liwe angalau herudi 3", context)
-            } else {
-                _getIdentityProgress.value = true
-                viewModelScope.launch(Dispatchers.Main) {
-                    withTryCatch(run = {
-                        val cR = context.contentResolver
-                        val path = imageUri.toString()
-                        val u = getIdentity(nickname.value!!, "", context)
-                        _user.value = u
-                        if (imageUri == null) {
-                            onFinish()
-                            _getIdentityProgress.value = false
-                        } else {
-                            val type = cR.getType(imageUri)
-                            startUploadAndUpdateProfilePicture(path, type, context)
-                            onFinish()
-                            _getIdentityProgress.value = false
-                        }
-                    }) {
-                        messageToApp(it, context)
-                    }
-                }
-            }
-        } else {
+        val a = age.value
+        val g = gender.value
+        if (imageUri == null) {
+            messageToApp("Bofya ilo boksi apo juu kuweka picha", context);
+            return
+        }
+        if (n == null || n.isEmpty()) {
             messageToApp("Jina linatakiwa liwe angalau herudi 3", context)
+            return
+        }
+        if (a == null || a.isEmpty()) {
+            messageToApp("Umri unatakiwa", context)
+            return
+        }
+        if (g == null || g.isEmpty()) {
+            messageToApp("Jinsia inatakiwa", context)
+            return
+        }
+        _getIdentityProgress.value = true
+        viewModelScope.launch(Dispatchers.Main) {
+            withTryCatch(run = {
+                val cR = context.contentResolver
+                val path = imageUri.toString()
+                val u = getIdentity(
+                    nickname.value!!.trim(),
+                    age.value!!.trim(),
+                    gender.value!!.trim(),
+                    "", context
+                )
+                _user.value = u
+                val type = cR.getType(imageUri)
+                startUploadAndUpdateProfilePicture(path, type, context)
+                onFinish()
+                _getIdentityProgress.value = false
+            }) {
+                messageToApp(it, context)
+            }
         }
     }
 
@@ -100,9 +124,5 @@ class JiungeState : ViewModel() {
                 _user.value = u
             }
         }
-    }
-
-    fun onPasswordChange(it: String) {
-        _password.value = it
     }
 }

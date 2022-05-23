@@ -32,9 +32,6 @@ fun MaongeziTopBar(context: Context, navController: NavController) {
     TopAppBar(
         title = {
             TitleView(totalUnread)
-        },
-        actions = {
-            ActionsView(navController)
         }
     )
     DisposableEffect("maongezi_top_bar") {
@@ -46,47 +43,6 @@ fun MaongeziTopBar(context: Context, navController: NavController) {
         }
         onDispose {
             s.cancel()
-        }
-    }
-}
-
-@Composable
-private fun ActionsView(navController: NavController) {
-    val showMenu = remember { mutableStateOf(false) }
-    IconButton(onClick = { showMenu.value = !showMenu.value }) {
-        Icon(
-            Icons.Default.MoreVert, contentDescription = "more_menu",
-            tint = Color.White
-        )
-    }
-    DropdownMenu(
-        expanded = showMenu.value,
-        onDismissRequest = { showMenu.value = false }
-    ) {
-        val scope = rememberCoroutineScope()
-        val context = LocalContext.current
-        DropdownMenuItem(onClick = {
-            navController.navigate("ukurasa"){
-                launchSingleTop = true
-            }
-        }) {
-            Text(text = "Picha & Jina.")
-        }
-        DropdownMenuItem(onClick = {
-           scope.launch {
-               val storage = DuaraStorage.getInstance(context)
-               storage.user().deleteAll()
-               storage.maongezi().deleteAll()
-               storage.maduara().deleteAll()
-               storage.message().deleteAll()
-               storage.messageCid().deleteAll()
-               storage.messageOutbox().deleteAll()
-               navController.navigate("jiunge"){
-                   launchSingleTop = true
-               }
-           }
-        }) {
-            Text(text = "Toka.")
         }
     }
 }

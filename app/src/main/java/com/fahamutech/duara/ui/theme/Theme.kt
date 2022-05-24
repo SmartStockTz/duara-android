@@ -8,11 +8,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val DarkColorPalette = darkColors(
-    primary = DuaraGreen,
-    primaryVariant = DuaraGreen,
-    secondary = DuaraBlue,
-    background = Color(0xFF00260F),
-    surface = Color(0xFF00260F),
+    primary = DuaraDarkGreen,
+    primaryVariant = DuaraDarkGreen,
+    secondary = DuaraDarkGreen,
+    background = DuaraDarkGreen,
+    surface = DuaraDarkGreen,
     onPrimary = Color.White,
     onSecondary = Color.White,
     onBackground = Color.White,
@@ -22,7 +22,7 @@ private val DarkColorPalette = darkColors(
 private val LightColorPalette = lightColors(
     primary = DuaraGreen,
     primaryVariant = DuaraGreen,
-    secondary = DuaraBlue,
+    secondary = DuaraDarkGreen,
     background = Color.White,
     surface = Color.White,
     onPrimary = Color.White,

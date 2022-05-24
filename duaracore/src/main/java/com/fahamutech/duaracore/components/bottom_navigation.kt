@@ -4,6 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
@@ -15,7 +16,7 @@ import com.fahamutech.duaracore.R
 @Composable
 fun DuaraBottomNav(navController: NavController) {
     val isDarMode = isSystemInDarkTheme()
-    val bgColor = if (!isDarMode) Color(0xFFFFFFFF) else Color(0xFF00260F)
+    val bgColor = if (!isDarMode) MaterialTheme.colors.primary else Color(0xFF00260F)
     BottomNavigation(
         backgroundColor = bgColor
     ) {
